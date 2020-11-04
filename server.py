@@ -74,12 +74,12 @@ class GameServer:
             )
         await self.current_player.ws.send(json.dumps(game_info))
 
-    async def incomming_handler(self, websocket, path):
+    async def incomming_handler(self, websocket, path): # cria um novo client e viewer e informa sobre os highscores e nome do jogador (game_info)
         """Process new clients arriving at the server."""
         try:
             async for message in websocket:
                 data = json.loads(message)
-                if data["cmd"] == "join":
+                if data["cmd"] == "join": # se cmd for join, vai adicionar um player, se for uma key = w,a,s,d vai fazer a função keypress (que guarda a última key que foi escolhida)
                     if path == "/player":
                         logger.info("<%s> has joined", data["name"])
                         await self.players.put(Player(data["name"], websocket))
@@ -173,7 +173,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--grading-server",
         help="url of grading server",
-        default="http://sokoban-aulas.ws.atnog.av.it.pt/game",
+        default="http://sokoban-aulas.ws.atnog.av.it.pt/game", # o server para onde vao ser mandadas as informações/os nossos resultados
     )
     args = parser.parse_args()
 

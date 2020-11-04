@@ -86,7 +86,7 @@ class Game:
             self.stop()
             return
 
-    def keypress(self, key):
+    def keypress(self, key): # key é w ou a ou s ou d, é a última direção tomada
         """Update locally last key pressed."""
         self._lastkeypress = key
 
@@ -118,7 +118,7 @@ class Game:
             if ctile & Tiles.MAN == Tiles.MAN:  # if you are the keeper you can push
                 if not self.move(npos, direction):  # as long as the pushed box can move
                     return False
-            else:  # you are not the Keeper, so no pushing
+            else:  # you are not the Keeper, so no pushing --> por exemplo se estiver duas caixas "coladas", a primeira caixa não é o keeper da segunda
                 return False
             self._pushes += 1
         else:
@@ -126,7 +126,7 @@ class Game:
 
         # actually update map
         self.map.set_tile(npos, ctile)
-        self.map.clear_tile(cur)
+        self.map.clear_tile(cur) # então supostamente só precisamos de fazer 1x set_tile para a "Nova posição" e 1x clear_tile para a posição antiga
         return True
 
     def update_keeper(self):

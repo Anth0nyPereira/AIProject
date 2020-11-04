@@ -20,11 +20,6 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
         # Receive information about static game properties
         await websocket.send(json.dumps({"cmd": "join", "name": agent_name}))
 
-        # Next 3 lines are not needed for AI agent
-        SCREEN = pygame.display.set_mode((299, 123))
-        SPRITES = pygame.image.load("data/pad.png").convert_alpha()
-        SCREEN.blit(SPRITES, (0, 0))
-
         while True:
             try:
                 update = json.loads(
@@ -55,7 +50,7 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                         elif event.key == pygame.K_RIGHT:
                             key = "d"
 
-                        elif event.key == pygame.K_d:
+                        elif event.key == pygame.K_d: # perguntar ao stor
                             import pprint
 
                             pprint.pprint(state)
@@ -68,10 +63,6 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 print("Server has cleanly disconnected us")
                 return
 
-            # Next line is not needed for AI agent
-            pygame.display.flip()
-
-
 # DO NOT CHANGE THE LINES BELLOW
 # You can change the default values using the command line, example:
 # $ NAME='arrumador' python3 client.py
@@ -80,3 +71,5 @@ SERVER = os.environ.get("SERVER", "localhost")
 PORT = os.environ.get("PORT", "8000")
 NAME = os.environ.get("NAME", getpass.getuser())
 loop.run_until_complete(agent_loop(f"{SERVER}:{PORT}", NAME))
+
+# perguntar ao stor dicas para o dominio
