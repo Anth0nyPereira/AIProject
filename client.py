@@ -2,6 +2,7 @@ import asyncio
 import getpass
 import json
 import os
+import random
 
 import websockets
 from mapa import Map
@@ -20,6 +21,12 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
         # Receive information about static game properties
         await websocket.send(json.dumps({"cmd": "join", "name": agent_name}))
 
+        # Next 3 lines are not needed for AI agent
+        # # perguntar ao stor
+        SCREEN = pygame.display.set_mode((299, 123))        
+        SPRITES = pygame.image.load("data/pad.png").convert_alpha()
+        SCREEN.blit(SPRITES, (0, 0))
+
         while True:
             try:
                 update = json.loads(
@@ -36,29 +43,8 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
 
                 # Next lines are only for the Human Agent, the key values are nonetheless the correct ones!
                 key = ""
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_UP:
-                            key = "w"
-                        elif event.key == pygame.K_LEFT:
-                            key = "a"
-                        elif event.key == pygame.K_DOWN:
-                            key = "s"
-                        elif event.key == pygame.K_RIGHT:
-                            key = "d"
-
-                        elif event.key == pygame.K_d: # perguntar ao stor
-                            import pprint
-
-                            pprint.pprint(state)
-                            print(Map(f"levels/{state['level']}.xsb"))
-                        await websocket.send(
-                            json.dumps({"cmd": "key", "key": key})
-                        )  # send key command to server - you must implement this send in the AI agent
-                        break
+                key = random.choice(["w","a","s","d"])
+                await websocket.send(json.dumps({"cmd": "key", "key": key}))  # send key command to server - you must implement this send in the AI agent
             except websockets.exceptions.ConnectionClosedOK:
                 print("Server has cleanly disconnected us")
                 return
