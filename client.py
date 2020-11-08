@@ -42,9 +42,17 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                     state = update
 
                 # Next lines are only for the Human Agent, the key values are nonetheless the correct ones!
-                key = ""
-                key = random.choice(["w","a","s","d"])
-                await websocket.send(json.dumps({"cmd": "key", "key": key}))  # send key command to server - you must implement this send in the AI agent
+                #TODO : CHANGE THIS
+                for key in actions:
+                    if key == MoveRight() or key == PushRight():
+                        key = "d"
+                    if key == MoveLeft() or key == PushLeft():
+                        key == "a"
+                    if key == MoveUp() or key == PushUp():
+                        key = "w"
+                    if key == MoveDown() or key == PushDown():
+                        key == "s"
+                    await websocket.send(json.dumps({"cmd": "key", "key": key}))  # send key command to server - you must implement this send in the AI agent
             except websockets.exceptions.ConnectionClosedOK:
                 print("Server has cleanly disconnected us")
                 return
