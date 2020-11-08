@@ -2,7 +2,6 @@ import asyncio
 import getpass
 import json
 import os
-import random
 
 import websockets
 from mapa import Map
@@ -21,9 +20,8 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
         # Receive information about static game properties
         await websocket.send(json.dumps({"cmd": "join", "name": agent_name}))
 
-        # Next 3 lines are not needed for AI agent
-        # # perguntar ao stor
-        SCREEN = pygame.display.set_mode((299, 123))        
+        # Next 3 lines are not needed for AI agent perguntar ao stor
+        SCREEN = pygame.display.set_mode((299, 123))
         SPRITES = pygame.image.load("data/pad.png").convert_alpha()
         SCREEN.blit(SPRITES, (0, 0))
 
@@ -56,7 +54,20 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
             except websockets.exceptions.ConnectionClosedOK:
                 print("Server has cleanly disconnected us")
                 return
+"""
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
 
+                    if event.type == pygame.KEYDOWN:
+
+                        elif event.key == pygame.K_d:
+                            import pprint
+
+                            pprint.pprint(state)
+                            print(Map(f"levels/{state['level']}.xsb"))
+                        
+                        break
+"""
 # DO NOT CHANGE THE LINES BELLOW
 # You can change the default values using the command line, example:
 # $ NAME='arrumador' python3 client.py
@@ -65,5 +76,3 @@ SERVER = os.environ.get("SERVER", "localhost")
 PORT = os.environ.get("PORT", "8000")
 NAME = os.environ.get("NAME", getpass.getuser())
 loop.run_until_complete(agent_loop(f"{SERVER}:{PORT}", NAME))
-
-# perguntar ao stor dicas para o dominio

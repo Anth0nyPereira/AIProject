@@ -38,13 +38,6 @@ a = "a"
 s = "s"
 d = "d"
 
-g = Game()
-game_state = g.state
-print(game_state)
-game_level = game_state["level"]
-game_map = Map(f"levels/{level}.xsb")
-print(game_map) 
-
 class MoveRight(Operator):
     # garantir q a posição atual é o keeper e a posição a seguir é floor
     initialPos = game_map.keeper
