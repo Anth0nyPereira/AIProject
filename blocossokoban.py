@@ -40,7 +40,8 @@ d = "d"
 
 class MoveRight(Operator):
     # garantir q a posição atual é o keeper e a posição a seguir é floor
-    initialPos = game_map.keeper
+    args = [initialPos]
+    initialPos = mapa
     finalPos = (initialPos[0]+1, initialPos[1])
     pc = [Floor(finalPos) or Goal(finalPos)] # saber se a pos final é floor
     neg = [Floor(finalPos) or Goal(finalPos), Man(initialPos)]
@@ -50,9 +51,10 @@ class MoveRight(Operator):
 
 class MoveLeft(Operator):
     # garantir q a posição atual é o keeper e a posição a seguir é floor
-    initialPos = game_map.keeper
+    args = [ix, iy, fx, fy]
+    initialPos = (x,y)
     finalPos = (initialPos[0]-1, initialPos[1])
-    pc = [Floor(finalPos) or Goal(finalPos)] # saber se a pos final é floor
+    pc = [Floor((x,y))) or Goal(finalPos)] # saber se a pos final é floor
     neg = [Floor(finalPos) or Goal(finalPos), Man(initialPos)]
     pos = [Floor(initialPos) or Goal(initialPos), Man(finalPos)]
 

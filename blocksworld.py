@@ -94,8 +94,6 @@ goal_state    = [ Floor(c), On(d,c), On(e,d), On(a,e), Floor(b) ] # lista de pre
 #
 
 
-
-
 print('Substitute:',On(X,Y).substitute({ X : a, Y : b, Z : c}))
 
 print('Instanciate:',Stack.instanciate([a,b]))

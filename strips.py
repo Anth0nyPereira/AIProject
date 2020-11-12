@@ -42,7 +42,7 @@ class Predicate:
 class Operator:
 
     def __init__(self,args,pc,neg,pos):
-        self.args = args
+        self.args = mapa
         self.pc  = pc
         self.neg = neg
         self.pos = pos
@@ -73,7 +73,8 @@ class Operator:
 class STRIPS(SearchDomain):
 
     # constructor
-    def __init__(self):
+    def __init__(self, mapa):
+        self.mapa = mapa
         pass
 
     # list of applicable actions in a given "state"

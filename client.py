@@ -41,6 +41,7 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
 
                 # Next lines are only for the Human Agent, the key values are nonetheless the correct ones!
                 #TODO : CHANGE THIS
+
                 for key in actions:
                     if key == MoveRight() or key == PushRight():
                         key = "d"

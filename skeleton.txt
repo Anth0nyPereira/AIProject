@@ -1,0 +1,29 @@
+- ESTRUTURAS DE DADOS
+	árvore c/ : 
+		estrutura p/ guardar nós (lista de listas?)
+		nodes c/ : 
+			parent
+			key
+			state c/:
+				mapa
+					
+- CRIAR NOVOS NÓS
+	para cada direção a partir do nó pai: verificar se a jogada é possível, se sim, adicionar como nó
+
+
+- METODO DE AVALIAÇÃO
+	----verificar se posFinal começa com uma caixa ou não:
+			-se posFinal não começa com Wall
+		-SE COMEÇAR COM CAIXA:
+			- se nao está pessoa-caixa-parede
+			- se (xFinal+1, yFinal) e (xFinal, yFinal+1) não começam com Walls
+	----ciclos sem caixas movidas
+	
+	----mapa.completed
+		get_path(node.parent)
+		
+- ? 
+
+
+
+[r, n1.1, n2.1, n3.3] [r, n1.1, n2.2, n3.1, n4.1]
