@@ -109,6 +109,38 @@ class Map:
         """List of coordinates of the empty goals locations."""
         return self.filter_tiles([Tiles.GOAL, Tiles.MAN_ON_GOAL])
 
+    def checkCorner(self):
+        for pos in self.boxes():                    #Para a posição de cada caixa  #self.boxes() retorna um array de posições no formato (x,y)
+            xCord = pos.pop()                       #Coordenada de uma caixa em x
+            yCord = pos.pop()                       #Coordenada de uma caixa em y
+            sidesBlocked = 0                        #Numero de lado bloquados
+            dirsTested= 0                           #Direções que foram testadas
+            if((self.get_tile((xCord, yCord+1)) == Tiles.WALL) or (self.get_tile((xCord, yCord+1)) == Tiles.BOX) or (self.get_tile((xCord, yCord+1)) == Tiles.BOX_ON_GOAL)):
+                #A linha acima verifica de a pos abaixo da caixa é parede / caixa ou caixa em diamante por agora vamos considerar todos estes elementos bloqueantes apesar de que no futuro provavelmente terá que ser repensado para resolver problemas mais complexos
+                #Caso seja true incrementar sidesBlocked
+                sidesBlocked = sidesBlocked +1
+            if ((self.get_tile((xCord, yCord - 1)) == Tiles.WALL) or (
+                    self.get_tile((xCord, yCord - 1)) == Tiles.BOX) or (
+                    self.get_tile((xCord, yCord - 1)) == Tiles.BOX_ON_GOAL)):
+                sidesBlocked = sidesBlocked + 1
+            if ((self.get_tile((xCord + 1, yCord)) == Tiles.WALL) or (
+                self.get_tile((xCord + 1, yCord)) == Tiles.BOX) or (
+                self.get_tile((xCord + 1, yCord)) == Tiles.BOX_ON_GOAL)):
+                sidesBlocked = sidesBlocked + 1
+
+            if ((self.get_tile((xCord - 1, yCord)) == Tiles.WALL) or (
+                self.get_tile((xCord - 1, yCord)) == Tiles.BOX) or (
+                self.get_tile((xCord - 1, yCord)) == Tiles.BOX_ON_GOAL)):
+                sidesBlocked = sidesBlocked + 1
+
+            if((dirsTested>=2) and (self.get_tile(pos) != Tiles.BOX_ON_GOAL))
+                return false  #Se existirem caixas bloqueadas sem estarem on goal retorna falso
+
+        return true #Se nenhuma caixa estiver corner blocked return true
+
+
+
+
     def get_tile(self, pos): # retorna o número que corresponde à tile dada uma posição
         """Retrieve tile at position pos."""
         x, y = pos
