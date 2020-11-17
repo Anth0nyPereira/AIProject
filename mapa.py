@@ -133,7 +133,7 @@ class Map:
                 self.get_tile((xCord - 1, yCord)) == Tiles.BOX_ON_GOAL)):
                 sidesBlocked = sidesBlocked + 1
 
-            if((dirsTested>=2) and (self.get_tile(pos) != Tiles.BOX_ON_GOAL))
+            if((dirsTested>=2) and (self.get_tile(pos) != Tiles.BOX_ON_GOAL)):
                 return false  #Se existirem caixas bloqueadas sem estarem on goal retorna falso
 
         return true #Se nenhuma caixa estiver corner blocked return true
