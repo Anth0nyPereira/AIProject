@@ -32,9 +32,7 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                 my_prob = MyProblem(my_dom)
                 my_tree = MyTree(my_prob)
                 
-                my_tree.search()
-
-                win_the_game = my_tree.getplan(my_tree.solution)
+                win_the_game = my_tree.search()
 
                 for key in win_the_game:
                     await websocket.send(json.dumps({"cmd": "key", "key": key}))  # send key command to server - you must implement this send in the AI agent

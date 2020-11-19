@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from consts import Tiles, TILES
+import copy
 
 #-------------------------------------------------------MYMAP------------------------------------------------------------
 class MyMap:
@@ -7,6 +8,7 @@ class MyMap:
 
     def __init__(self, mapa):
         self.mapa = mapa
+        self._keeper = None
 
         self.hor_tiles, self.ver_tiles = (
             max([len(line) for line in self.mapa]),
@@ -27,7 +29,7 @@ class MyMap:
         return reduce(
             add,
             [
-                reduce(lambda a, b: a + int(b is Tiles.BOX_ON_GOAL), l, 0)
+                reduce(lambda a, b: a + int(b == 5), l, 0)
                 for l in self.mapa
             ],
         )
@@ -44,18 +46,21 @@ class MyMap:
     @property
     def keeper(self):
         """Coordinates of the Keeper."""
-        self.keeper = self.filter_tiles([Tiles.MAN, Tiles.MAN_ON_GOAL])[0]
-        return self.keeper
+        if self._keeper is None:
+            self._keeper = self.filter_tiles([2,3])[0]
+
+        return self._keeper
+
 
     @property
     def boxes(self):
         """List of coordinates of the boxes."""
-        return self.filter_tiles([Tiles.BOX, Tiles.BOX_ON_GOAL])
+        return self.filter_tiles([4,5])
 
     @property
     def empty_goals(self):
         """List of coordinates of the empty goals locations."""
-        return self.filter_tiles([Tiles.GOAL, Tiles.MAN_ON_GOAL])
+        return self.filter_tiles([1,3])
 
     def get_tile(self, pos):
         """Retrieve tile at position pos."""
@@ -66,13 +71,13 @@ class MyMap:
         """Set the tile at position pos to tile."""
         x, y = pos
         self.mapa[y][x] = (
-            tile & 0b1110 | self._map[y][x]
+            tile & 0b1110 | self.mapa[y][x]
         )  # the 0b1110 mask avoid carring ON_GOAL to new tiles
 
         if (
-            tile & Tiles.MAN == Tiles.MAN
+            tile & 2 == 2
         ):  # hack to avoid continuous searching for keeper
-            self.keeper = pos
+            self._keeper = pos
 
     def clear_tile(self, pos):
         """Remove mobile entity from pos."""
@@ -85,7 +90,7 @@ class MyMap:
         if x not in range(self.hor_tiles) or y not in range(self.ver_tiles):
             logger.error("Position out of map")
             return True
-        if self._map[y][x] in [Tiles.WALL]:
+        if self.mapa[y][x] == 8:
             logger.debug("Position is a wall")
             return True
         return False
@@ -97,13 +102,14 @@ class MyDomain:
         self.initial = initial
     
     def actions(self, state_map): # valid actions for a given state
-        actlist = []
+        actList = []
         
         keeper_x, keeper_y = state_map.keeper
 
         # for each direction, if the next tile is "empty", the action is valid
         # if the next tile has a box, then the action is only valid if the other next tile is "empty" and not a corner
         # TODO: add cornercheck and blockedcheck
+
         if state_map.mapa[keeper_y][keeper_x + 1] == 0 or state_map.mapa[keeper_y][keeper_x + 1] == 1:
             actList.append('d')
         elif state_map.mapa[keeper_y][keeper_x + 1] == 4 or state_map.mapa[keeper_y][keeper_x + 1] == 5:
@@ -128,27 +134,43 @@ class MyDomain:
             if state_map.mapa[keeper_y - 2][keeper_x] == 0 or state_map.mapa[keeper_y - 2][keeper_x] == 1:
                 actList.append('w')
         
-        return actlist 
+        return actList 
     
     def result(self,state_map,action): # result of an action in a given state (aka next state given an action)
-        new_map = MyMap(state_map.mapa.copy())
-        keeper_x, keeper_y = new_map.keeper
+        new_map = MyMap(copy.deepcopy(state_map.mapa))
+        x, y = new_map.keeper
 
         if action == 'd':
+            if new_map.mapa[y][x+1] == 4 or new_map.mapa[y][x+1] == 5:
+                new_map.clear_tile((x+1, y))
+                new_map.set_tile((x+2, y), 4)
+
             new_map.clear_tile((x,y))
-            new_map.set_tile((x+1, y), Tiles.MAN)
+            new_map.set_tile((x+1, y), 2)
 
         if action == 'a':
+            if new_map.mapa[y][x-1] == 4 or new_map.mapa[y][x-1] == 5:
+                new_map.clear_tile((x-1, y))
+                new_map.set_tile((x-2, y), 4)
+
             new_map.clear_tile((x,y))
-            new_map.set_tile((x-1, y), Tiles.MAN)
+            new_map.set_tile((x-1, y), 2)
         
         if action == 's':
+            if new_map.mapa[y+1][x] == 4 or new_map.mapa[y+1][x] == 5:
+                new_map.clear_tile((x, y+1))
+                new_map.set_tile((x, y+2), 4)
+
             new_map.clear_tile((x,y))
-            new_map.set_tile((x, y+1), Tiles.MAN)
+            new_map.set_tile((x, y+1), 2)
 
         if action == 'w':
+            if new_map.mapa[y-1][x] == 4 or new_map.mapa[y-1][x] == 5:
+                new_map.clear_tile((x, y-1))
+                new_map.set_tile((x, y-2), 4)
+                
             new_map.clear_tile((x,y))
-            new_map.set_tile((x, y-1), Tiles.MAN)
+            new_map.set_tile((x, y-1), 2)
 
         return new_map
 
@@ -187,7 +209,7 @@ class MyNode:
         return self.parent.in_parent(newstate) 
         
     def __str__(self):
-        return "no(" + str(self.state) + "," + str(self.parent) + ")"
+        return str(self.state_map)
     def __repr__(self):
         return str(self)
 
@@ -236,10 +258,18 @@ class MyTree:
     def search(self, limit=None):
         while self.open_nodes != []:
             node = self.open_nodes.pop(0)
+            print("key =")
+            print(node.action)
+            print("keeper =")
+            print(node.state_map.keeper)
+            print("boxes =")
+            print(node.state_map.boxes)
+            print("goal =")
+            print(node.state_map.empty_goals)
             if self.problem.goal_test(node.state_map):
                 self.solution = node
                 self.terminals = len(self.open_nodes) + 1
-                return self.get_path(node)
+                return self.get_plan(node)
             self.non_terminals += 1 # the open node we just popped now has children
             lnewnodes = []
             for key in self.problem.domain.actions(node.state_map): # for each avaliable action on this state
