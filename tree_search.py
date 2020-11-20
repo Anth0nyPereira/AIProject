@@ -1,8 +1,11 @@
-from abc import ABC, abstractmethod
-from consts import Tiles, TILES
+from audioop import add
+from functools import reduce
 import copy
 
 #-------------------------------------------------------MYMAP------------------------------------------------------------
+from game import logger
+
+
 class MyMap:
     """Representation of a Map."""
 
@@ -101,40 +104,57 @@ class MyDomain:
     def __init__(self, initial):
         self.initial = initial
     
+
+    def cornerCheck(self,state_map, pos): # pos will be the final position of a box
+        x,y = pos
+        if state_map[y+1][x] == 8 and state_map[y][x+1] == 8: # down and right are walls 
+            return True
+        elif state_map[y+1][x] == 8 and state_map[y][x-1] == 8: # down and left are walls
+            return True
+        elif state_map[y-1][x] == 8 and state_map[y][x+1] == 8: # up and rigtht are walls
+            return True
+        elif state_map[y-1][x] == 8 and state_map[y][x-1] == 8: # up and left are walls
+            return True
+        return False
+
+
     def actions(self, state_map): # valid actions for a given state
         actList = []
-        
+
         keeper_x, keeper_y = state_map.keeper
 
         # for each direction, if the next tile is "empty", the action is valid
         # if the next tile has a box, then the action is only valid if the other next tile is "empty" and not a corner
         # TODO: add cornercheck and blockedcheck
 
-        if state_map.mapa[keeper_y][keeper_x + 1] == 0 or state_map.mapa[keeper_y][keeper_x + 1] == 1:
+        if state_map.mapa[keeper_y][keeper_x + 1] == 0 or state_map.mapa[keeper_y][keeper_x + 1] == 1: # next position is a floor or goal - move
             actList.append('d')
-        elif state_map.mapa[keeper_y][keeper_x + 1] == 4 or state_map.mapa[keeper_y][keeper_x + 1] == 5:
-            if state_map.mapa[keeper_y][keeper_x + 2] == 0 or state_map.mapa[keeper_y][keeper_x + 2] == 1:
+        elif state_map.mapa[keeper_y][keeper_x + 1] == 4 or state_map.mapa[keeper_y][keeper_x + 1] == 5: # next position is a box or box on goal
+            if (state_map.mapa[keeper_y][keeper_x + 2] == 0 and not self.cornerCheck(state_map.mapa, (keeper_x + 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x + 2] == 1: # the other position next to the 1st position is a floor or goal - push
                 actList.append('d')
 
         if state_map.mapa[keeper_y][keeper_x - 1] == 0 or state_map.mapa[keeper_y][keeper_x - 1] == 1:
             actList.append('a')
         elif state_map.mapa[keeper_y][keeper_x - 1] == 4 or state_map.mapa[keeper_y][keeper_x - 1] == 5:
-            if state_map.mapa[keeper_y][keeper_x - 2] == 0 or state_map.mapa[keeper_y][keeper_x - 2] == 1:
+            if (state_map.mapa[keeper_y][keeper_x - 2] == 0 and not self.cornerCheck(state_map.mapa, (keeper_x - 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x - 2] == 1:
                 actList.append('a')
         
         if state_map.mapa[keeper_y + 1][keeper_x] == 0 or state_map.mapa[keeper_y + 1][keeper_x] == 1:
             actList.append('s')
         elif state_map.mapa[keeper_y + 1][keeper_x] == 4 or state_map.mapa[keeper_y + 1][keeper_x] == 5:
-            if state_map.mapa[keeper_y + 2][keeper_x] == 0 or state_map.mapa[keeper_y + 2][keeper_x] == 1:
+            if (state_map.mapa[keeper_y + 2][keeper_x] == 0 and not self.cornerCheck(state_map.mapa, (keeper_x, keeper_y + 2))) or state_map.mapa[keeper_y + 2][keeper_x] == 1:
                 actList.append('s')
 
         if state_map.mapa[keeper_y - 1][keeper_x] == 0 or state_map.mapa[keeper_y - 1][keeper_x] == 1:
             actList.append('w')
         elif state_map.mapa[keeper_y - 1][keeper_x] == 4 or state_map.mapa[keeper_y - 1][keeper_x] == 5:
-            if state_map.mapa[keeper_y - 2][keeper_x] == 0 or state_map.mapa[keeper_y - 2][keeper_x] == 1:
+            if (state_map.mapa[keeper_y - 2][keeper_x] == 0 and not self.cornerCheck(state_map.mapa, (keeper_x, keeper_y - 2))) or state_map.mapa[keeper_y - 2][keeper_x] == 1:
                 actList.append('w')
         
         return actList 
+
+    
+
     
     def result(self,state_map,action): # result of an action in a given state (aka next state given an action)
         new_map = MyMap(copy.deepcopy(state_map.mapa))
@@ -148,26 +168,37 @@ class MyDomain:
             new_map.clear_tile((x,y))
             new_map.set_tile((x+1, y), 2)
 
+
         if action == 'a':
-            if new_map.mapa[y][x-1] == 4 or new_map.mapa[y][x-1] == 5:
+            if new_map.mapa[y][x-1] in [4,5]:
                 new_map.clear_tile((x-1, y))
-                new_map.set_tile((x-2, y), 4)
+                if new_map.mapa[y][x-2] == 0:
+                    new_map.set_tile((x-2, y), 4)
+                elif new_map.mapa[y][x-2] == 1:
+                    new_map.set_tile((x - 2, y), 5)
 
             new_map.clear_tile((x,y))
             new_map.set_tile((x-1, y), 2)
         
         if action == 's':
-            if new_map.mapa[y+1][x] == 4 or new_map.mapa[y+1][x] == 5:
-                new_map.clear_tile((x, y+1))
-                new_map.set_tile((x, y+2), 4)
+            if new_map.mapa[y + 1][x] in [4,5]:
+                new_map.clear_tile((x, y + 1))
+                if new_map.mapa[y + 2][x] == 0:
+                    new_map.set_tile((x, y + 2), 4)
+                elif new_map.mapa[y+2][x] == 1:
+                    new_map.set_tile((x, y + 2), 5)
+
 
             new_map.clear_tile((x,y))
             new_map.set_tile((x, y+1), 2)
 
         if action == 'w':
-            if new_map.mapa[y-1][x] == 4 or new_map.mapa[y-1][x] == 5:
+            if new_map.mapa[y-1][x] in [4,5]:
                 new_map.clear_tile((x, y-1))
-                new_map.set_tile((x, y-2), 4)
+                if new_map.mapa[y-2][x] == 0:
+                    new_map.set_tile((x, y-2), 4)
+                elif new_map.mapa[y-2][x] == 1:
+                    new_map.set_tile((x, y - 2), 5)
                 
             new_map.clear_tile((x,y))
             new_map.set_tile((x, y-1), 2)
@@ -176,6 +207,10 @@ class MyDomain:
 
     def satisfies(self, state_map): # test if the given "goal" is satisfied in "state"
         return state_map.empty_goals == []
+
+    def cost(self, state, action):
+        return 1
+    
 
 #------------------------------------------------------------------------------------------------------------------------
 
@@ -203,7 +238,7 @@ class MyNode:
     def in_parent(self, newstate):
         if self.parent == None:
             return False
-        if self.parent.state_map == newstate:
+        if self.parent.state_map.mapa == newstate.mapa:
             return True
         
         return self.parent.in_parent(newstate) 
@@ -258,14 +293,6 @@ class MyTree:
     def search(self, limit=None):
         while self.open_nodes != []:
             node = self.open_nodes.pop(0)
-            print("key =")
-            print(node.action)
-            print("keeper =")
-            print(node.state_map.keeper)
-            print("boxes =")
-            print(node.state_map.boxes)
-            print("goal =")
-            print(node.state_map.empty_goals)
             if self.problem.goal_test(node.state_map):
                 self.solution = node
                 self.terminals = len(self.open_nodes) + 1

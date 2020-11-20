@@ -26,7 +26,7 @@ class Game:
     def __init__(self, level=0, timeout=TIMEOUT, player=None):
         logger.info("Game(level=%s)", level)
         self.puzzles = 0 #puzzles completed
-        self.level = 0
+        self.level = level
         if player:
             self._running = True
             self._player_name = player

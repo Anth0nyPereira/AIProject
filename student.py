@@ -2,6 +2,7 @@ import asyncio
 import getpass
 import json
 import os
+import time
 
 import websockets
 from mapa import Map
@@ -23,19 +24,21 @@ async def agent_loop(server_address="localhost:8000", agent_name="student"):
                     # we got a new level
                     game_properties = update
                     mapa = Map(update["map"])
-                else:
-                    # we got a current map state update
-                    state = update
+                    # Next lines are only for the Human Agent, the key values are nonetheless the correct ones!
+                    my_dom = MyDomain(mapa._map)
+                    my_prob = MyProblem(my_dom)
+                    my_tree = MyTree(my_prob)
 
-                # Next lines are only for the Human Agent, the key values are nonetheless the correct ones!
-                my_dom = MyDomain(mapa._map)
-                my_prob = MyProblem(my_dom)
-                my_tree = MyTree(my_prob)
-                
-                win_the_game = my_tree.search()
+                    win_the_game = my_tree.search()
+                    print(win_the_game)
 
-                for key in win_the_game:
-                    await websocket.send(json.dumps({"cmd": "key", "key": key}))  # send key command to server - you must implement this send in the AI agent
+                if win_the_game:
+                    state = win_the_game.pop(0)
+                    time.sleep(0.3)
+                    await websocket.send(
+                        json.dumps({"cmd": "key", "key": state})
+                    )
+
             except websockets.exceptions.ConnectionClosedOK:
                 print("Server has cleanly disconnected us")
                 return
