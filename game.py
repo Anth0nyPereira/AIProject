@@ -23,10 +23,10 @@ def reduce_score(score):
 class Game:
     """Representation of a Game run."""
 
-    def __init__(self, level=1, timeout=TIMEOUT, player=None):
+    def __init__(self, level=0, timeout=TIMEOUT, player=None):
         logger.info("Game(level=%s)", level)
         self.puzzles = 0 #puzzles completed
-        self.level = level
+        self.level = 0
         if player:
             self._running = True
             self._player_name = player

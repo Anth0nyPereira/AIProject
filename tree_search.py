@@ -1,158 +1,281 @@
-# Module: tree_search
-# 
-# This module provides a set o classes for automated
-# problem solving through tree search:
-#    SearchDomain  - problem domains
-#    SearchProblem - concrete problems to be solved
-#    SearchNode    - search tree nodes
-#    SearchTree    - search tree with the necessary methods for searhing
-#
-#  (c) Luis Seabra Lopes
-#  Introducao a Inteligencia Artificial, 2012-2019,
-#  Inteligência Artificial, 2014-2019
-
 from abc import ABC, abstractmethod
+from consts import Tiles, TILES
+import copy
 
-# Dominios de pesquisa
-# Permitem calcular
-# as accoes possiveis em cada estado, etc
-class SearchDomain(ABC):
+#-------------------------------------------------------MYMAP------------------------------------------------------------
+class MyMap:
+    """Representation of a Map."""
 
-    # construtor
-    @abstractmethod
-    def __init__(self):
-        pass
+    def __init__(self, mapa):
+        self.mapa = mapa
+        self._keeper = None
 
-    # lista de accoes possiveis num estado
-    @abstractmethod
-    def actions(self, state):
-        pass
+        self.hor_tiles, self.ver_tiles = (
+            max([len(line) for line in self.mapa]),
+            len(self.mapa),
+        )  # X, Y
 
-    # resultado de uma accao num estado, ou seja, o estado seguinte
-    @abstractmethod
-    def result(self, state, action):
-        pass
+    @property
+    def completed(self):
+        """Map is completed when there are no empty_goals!"""
+        return self.empty_goals == []
 
-    # custo de uma accao num estado
-    @abstractmethod
-    def cost(self, state, action):
-        pass
+    @property
+    def on_goal(self):
+        """Number of boxes on goal.
 
-    # custo estimado de chegar de um estado a outro
-    @abstractmethod
-    def heuristic(self, state, goal):
-        pass
+           Counts per line and counts all lines using reduce
+        """
+        return reduce(
+            add,
+            [
+                reduce(lambda a, b: a + int(b == 5), l, 0)
+                for l in self.mapa
+            ],
+        )
 
-    # test if the given "goal" is satisfied in "state"
-    @abstractmethod
-    def satisfies(self, state, goal):
-        pass
+    def filter_tiles(self, list_to_filter):
+        """Util to retrieve list of coordinates of given tiles."""
+        return [
+            (x, y)
+            for y, l in enumerate(self.mapa)
+            for x, tile in enumerate(l)
+            if tile in list_to_filter
+        ]
+
+    @property
+    def keeper(self):
+        """Coordinates of the Keeper."""
+        if self._keeper is None:
+            self._keeper = self.filter_tiles([2,3])[0]
+
+        return self._keeper
 
 
-# Problemas concretos a resolver
-# dentro de um determinado dominio
-class SearchProblem:
-    def __init__(self, domain, initial, goal):
-        self.domain = domain
+    @property
+    def boxes(self):
+        """List of coordinates of the boxes."""
+        return self.filter_tiles([4,5])
+
+    @property
+    def empty_goals(self):
+        """List of coordinates of the empty goals locations."""
+        return self.filter_tiles([1,3])
+
+    def get_tile(self, pos):
+        """Retrieve tile at position pos."""
+        x, y = pos
+        return self.mapa[y][x]
+
+    def set_tile(self, pos, tile):
+        """Set the tile at position pos to tile."""
+        x, y = pos
+        self.mapa[y][x] = (
+            tile & 0b1110 | self.mapa[y][x]
+        )  # the 0b1110 mask avoid carring ON_GOAL to new tiles
+
+        if (
+            tile & 2 == 2
+        ):  # hack to avoid continuous searching for keeper
+            self._keeper = pos
+
+    def clear_tile(self, pos):
+        """Remove mobile entity from pos."""
+        x, y = pos
+        self.mapa[y][x] = self.mapa[y][x] & 0b1  # lesser bit carries ON_GOAL
+
+    def is_blocked(self, pos):
+        """Determine if mobile entity can be placed at pos."""
+        x, y = pos
+        if x not in range(self.hor_tiles) or y not in range(self.ver_tiles):
+            logger.error("Position out of map")
+            return True
+        if self.mapa[y][x] == 8:
+            logger.debug("Position is a wall")
+            return True
+        return False
+#-----------------------------------------------------------------------------------------------------------------------
+
+#-------------------------------------------------------MYDOMAIN----------------------------------------------------------
+class MyDomain:
+    def __init__(self, initial):
         self.initial = initial
-        self.goal = goal
-    def goal_test(self, state):
-        return self.domain.satisfies(state,self.goal)
+    
+    def actions(self, state_map): # valid actions for a given state
+        actList = []
+        
+        keeper_x, keeper_y = state_map.keeper
+
+        # for each direction, if the next tile is "empty", the action is valid
+        # if the next tile has a box, then the action is only valid if the other next tile is "empty" and not a corner
+        # TODO: add cornercheck and blockedcheck
+
+        if state_map.mapa[keeper_y][keeper_x + 1] == 0 or state_map.mapa[keeper_y][keeper_x + 1] == 1:
+            actList.append('d')
+        elif state_map.mapa[keeper_y][keeper_x + 1] == 4 or state_map.mapa[keeper_y][keeper_x + 1] == 5:
+            if state_map.mapa[keeper_y][keeper_x + 2] == 0 or state_map.mapa[keeper_y][keeper_x + 2] == 1:
+                actList.append('d')
+
+        if state_map.mapa[keeper_y][keeper_x - 1] == 0 or state_map.mapa[keeper_y][keeper_x - 1] == 1:
+            actList.append('a')
+        elif state_map.mapa[keeper_y][keeper_x - 1] == 4 or state_map.mapa[keeper_y][keeper_x - 1] == 5:
+            if state_map.mapa[keeper_y][keeper_x - 2] == 0 or state_map.mapa[keeper_y][keeper_x - 2] == 1:
+                actList.append('a')
+        
+        if state_map.mapa[keeper_y + 1][keeper_x] == 0 or state_map.mapa[keeper_y + 1][keeper_x] == 1:
+            actList.append('s')
+        elif state_map.mapa[keeper_y + 1][keeper_x] == 4 or state_map.mapa[keeper_y + 1][keeper_x] == 5:
+            if state_map.mapa[keeper_y + 2][keeper_x] == 0 or state_map.mapa[keeper_y + 2][keeper_x] == 1:
+                actList.append('s')
+
+        if state_map.mapa[keeper_y - 1][keeper_x] == 0 or state_map.mapa[keeper_y - 1][keeper_x] == 1:
+            actList.append('w')
+        elif state_map.mapa[keeper_y - 1][keeper_x] == 4 or state_map.mapa[keeper_y - 1][keeper_x] == 5:
+            if state_map.mapa[keeper_y - 2][keeper_x] == 0 or state_map.mapa[keeper_y - 2][keeper_x] == 1:
+                actList.append('w')
+        
+        return actList 
+    
+    def result(self,state_map,action): # result of an action in a given state (aka next state given an action)
+        new_map = MyMap(copy.deepcopy(state_map.mapa))
+        x, y = new_map.keeper
+
+        if action == 'd':
+            if new_map.mapa[y][x+1] == 4 or new_map.mapa[y][x+1] == 5:
+                new_map.clear_tile((x+1, y))
+                new_map.set_tile((x+2, y), 4)
+
+            new_map.clear_tile((x,y))
+            new_map.set_tile((x+1, y), 2)
+
+        if action == 'a':
+            if new_map.mapa[y][x-1] == 4 or new_map.mapa[y][x-1] == 5:
+                new_map.clear_tile((x-1, y))
+                new_map.set_tile((x-2, y), 4)
+
+            new_map.clear_tile((x,y))
+            new_map.set_tile((x-1, y), 2)
+        
+        if action == 's':
+            if new_map.mapa[y+1][x] == 4 or new_map.mapa[y+1][x] == 5:
+                new_map.clear_tile((x, y+1))
+                new_map.set_tile((x, y+2), 4)
+
+            new_map.clear_tile((x,y))
+            new_map.set_tile((x, y+1), 2)
+
+        if action == 'w':
+            if new_map.mapa[y-1][x] == 4 or new_map.mapa[y-1][x] == 5:
+                new_map.clear_tile((x, y-1))
+                new_map.set_tile((x, y-2), 4)
+                
+            new_map.clear_tile((x,y))
+            new_map.set_tile((x, y-1), 2)
+
+        return new_map
+
+    def satisfies(self, state_map): # test if the given "goal" is satisfied in "state"
+        return state_map.empty_goals == []
+
+#------------------------------------------------------------------------------------------------------------------------
+
+#-------------------------------------------------------MYPROBLEM------------------------------------------------------------
+class MyProblem:
+    def __init__(self, domain):
+        self.domain = domain
+        self.initial = domain.initial
+    def goal_test(self, state): # tests if we found our goal state using map.empty_goals == []
+        return self.domain.satisfies(state)
+
+#------------------------------------------------------------------------------------------------------------------------
+
+#--------------------------------------------------------MYNODE--------------------------------------------------------------
 
 # Nos de uma arvore de pesquisa
-class SearchNode:
-    def __init__(self,state,parent,depth,cost,heuristic,action): 
-        self.state = state
+class MyNode:
+    def __init__(self,state_map,parent,depth,action): 
+        self.state_map = state_map
         self.parent = parent
         self.depth = depth
-        self.cost = cost
-        self.heuristic = heuristic
         self.action = action
             
+    # preventing cycles
     def in_parent(self, newstate):
         if self.parent == None:
             return False
-        if self.parent.state == newstate:
+        if self.parent.state_map == newstate:
             return True
         
         return self.parent.in_parent(newstate) 
         
     def __str__(self):
-        return "no(" + str(self.state) + "," + str(self.parent) + ")"
+        return str(self.state_map)
     def __repr__(self):
         return str(self)
 
-# Arvores de pesquisa
-class SearchTree:
+#------------------------------------------------------------------------------------------------------------------------
 
-    # construtor
-    def __init__(self,problem, strategy='breadth'): 
+#-------------------------------------------------------MYTREE------------------------------------------------------------
+
+# Arvores de pesquisa
+class MyTree:
+    def __init__(self,problem): 
         self.problem = problem
-        root = SearchNode(problem.initial, None, 0, 0, 0, None)
+        root = MyNode(MyMap(problem.initial), None, 0, None)
         self.open_nodes = [root]
-        self.strategy = strategy
         self.solution = None
-        self.terminals = 1 # raiz
+        self.terminals = 1  #root starts as terminal
         self.non_terminals = 0
 
-    # obter o caminho (sequencia de estados) da raiz ate um no
+    # get state maps from root to a given node
     def get_path(self,node):
         if node.parent == None:
-            return [node.state]
+            return [node.state_map.mapa]
         path = self.get_path(node.parent)
-        path += [node.state]
+        path += [node.state_map.mapa]
         return path
 
     def get_plan(self, node):
         if node.parent == None:
             return []
-        plan = self.get_plan(node.parent) # plano para chegar ao meu pai
-        plan += [node.action] # para chegar do pai até mim
+        plan = self.get_plan(node.parent) # recursively from the root until this node
+        plan += [node.action] # getting the list of keys used
         return plan
 
     @property
     def plan(self):
-        return self.get_plan(self.solution)
+        return self.get_plan(self.solution) # this is what we want to pass to the server!!
         
     @property
     def length(self):
-            return self.solution.depth # solution é um node, é o nó solução
-        
-    @property
-    def cost(self):
-            return self.solution.cost # o custo da árvore/da solução
-       
-    @property # basicamente para não usares os ()
+            return self.solution.depth # number of steps it takes from root to solution
+               
+    @property # average of expansions ? 
     def avg_branching(self):
-        return round((self.terminals + self.non_terminals - 1) / self.non_terminals, 2) # 2 casas decimais
+        return round((self.terminals + self.non_terminals - 1) / self.non_terminals, 2) # 2 decimal figures
         
-    # procurar a solucao
+    # search for solution TODO: put the async here
     def search(self, limit=None):
         while self.open_nodes != []:
             node = self.open_nodes.pop(0)
-            if self.problem.goal_test(node.state):
+            print("key =")
+            print(node.action)
+            print("keeper =")
+            print(node.state_map.keeper)
+            print("boxes =")
+            print(node.state_map.boxes)
+            print("goal =")
+            print(node.state_map.empty_goals)
+            if self.problem.goal_test(node.state_map):
                 self.solution = node
                 self.terminals = len(self.open_nodes) + 1
-                return self.get_path(node)
-            self.non_terminals += 1 # o nó aberto que era dos open_nodes e que agr ou tem filhos, ou não tem filhos mas considera-se que um nó expandido mesmo que não tenha filhos seja não-terminal por causa do enunciado
+                return self.get_plan(node)
+            self.non_terminals += 1 # the open node we just popped now has children
             lnewnodes = []
-            for a in self.problem.domain.actions(node.state): # para uma ação do domínio de ações disponíveis
-                newstate = self.problem.domain.result(node.state,a)
-                newnode = SearchNode(newstate, node, node.depth+1, node.cost + self.problem.domain.cost(node.state, a), self.problem.domain.heuristic(newstate,self.problem.goal), a) # o estado de um nó é a cidade "em que se encontra"
+            for key in self.problem.domain.actions(node.state_map): # for each avaliable action on this state
+                newstate = self.problem.domain.result(node.state_map,key)
+                newnode = MyNode(newstate, node, node.depth+1, key) # creating child node
                 if not node.in_parent(newstate) and (limit == None or newnode.depth <= limit):
                     lnewnodes.append(newnode)
-            self.add_to_open(lnewnodes)
-        return None
-
-    # juntar novos nos a lista de nos abertos de acordo com a estrategia
-    def add_to_open(self,lnewnodes):
-        if self.strategy == 'breadth':
             self.open_nodes.extend(lnewnodes)
-        elif self.strategy == 'depth':
-            self.open_nodes[:0] = lnewnodes
-        elif self.strategy == 'uniform':
-            self.open_nodes = sorted(self.open_nodes + lnewnodes, key=lambda node: node.cost)
-        elif self.strategy == 'greedy':
-            self.open_nodes = sorted(self.open_nodes + lnewnodes, key=lambda node: node.heuristic)
-        elif self.strategy == 'a*':
-            self.open_nodes = sorted(self.open_nodes + lnewnodes, key=lambda node: node.cost + node.heuristic)
+        return None

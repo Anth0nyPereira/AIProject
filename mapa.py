@@ -25,7 +25,7 @@ class Map:
                     tile = TILES[c]
                     codedline.append(tile)
 
-                self._map.append(codedline) #_map é uma lista de listas, cada lista é uma linha do mapa que foi acrescentada ao ler o ficheiro
+                self._map.append(codedline)
 
         self.hor_tiles, self.ver_tiles = (
             max([len(line) for line in self._map]),
@@ -35,9 +35,9 @@ class Map:
         # Add extra tiles to make the map a rectangule
         for y, line in enumerate(self._map):
             while len(line) < self.hor_tiles:
-                self._map[y].append(Tiles.FLOOR) #mete chão em sitios "vazios" mas de qlqer maneira n vais poder chegar lá provavelmente por causa da parede
+                self._map[y].append(Tiles.FLOOR)
 
-    def __str__(self): # vai ficar igual ao ficheiro do mapa
+    def __str__(self):
         map_str = ""
         screen = {tile: symbol for symbol, tile in TILES.items()}
         for line in self._map:
@@ -47,10 +47,10 @@ class Map:
 
         return map_str.strip()
 
-    def __getstate__(self): # retorna o mapa (cada vez que mudas alguma posição o mapa muda)
+    def __getstate__(self):
         return self._map
 
-    def __setstate__(self, state): # definir o "mapa novo" de acordo com a jogada/moviemtnação feita
+    def __setstate__(self, state):
         self._map = state
         self._keeper = None
         self.hor_tiles, self.ver_tiles = (
@@ -77,13 +77,13 @@ class Map:
         return reduce(
             add,
             [
-                reduce(lambda a, b: a + int(b is Tiles.BOX_ON_GOAL), l, 0) # a e b são posições numa dada linha do mapa
-                for l in self._map # l representa uma linha horizontal do mapa
+                reduce(lambda a, b: a + int(b is Tiles.BOX_ON_GOAL), l, 0)
+                for l in self._map
             ],
         )
 
     def filter_tiles(self, list_to_filter):
-        """Util to retrieve list of coordinates of given tiles.""" # retorna lista onde está o tipo de tile que queres
+        """Util to retrieve list of coordinates of given tiles."""
         return [
             (x, y)
             for y, l in enumerate(self._map)
@@ -92,7 +92,7 @@ class Map:
         ]
 
     @property
-    def keeper(self):   # posição do man no momento (pode estar em cima de um diamante ou de um chão)
+    def keeper(self):
         """Coordinates of the Keeper."""
         if self._keeper is None:
             self._keeper = self.filter_tiles([Tiles.MAN, Tiles.MAN_ON_GOAL])[0]
@@ -100,19 +100,19 @@ class Map:
         return self._keeper
 
     @property
-    def boxes(self): # posições das caixas
+    def boxes(self):
         """List of coordinates of the boxes."""
         return self.filter_tiles([Tiles.BOX, Tiles.BOX_ON_GOAL])
 
     @property
-    def empty_goals(self): # posições dos diamantes (quer esteja o man em cima ou não, mas não devolve caixas que já estejam a verde/no local certo)
+    def empty_goals(self):
         """List of coordinates of the empty goals locations."""
         return self.filter_tiles([Tiles.GOAL, Tiles.MAN_ON_GOAL])
 
-    def get_tile(self, pos): # retorna o número que corresponde à tile dada uma posição
+    def get_tile(self, pos):
         """Retrieve tile at position pos."""
         x, y = pos
-        return self._map[y][x] # y é o nr da linha (uma das listas) e o x é o elemento da lista
+        return self._map[y][x]
 
     def set_tile(self, pos, tile):
         """Set the tile at position pos to tile."""
@@ -126,12 +126,12 @@ class Map:
         ):  # hack to avoid continuous searching for keeper
             self._keeper = pos
 
-    def clear_tile(self, pos):  # perguntar ao stor
+    def clear_tile(self, pos):
         """Remove mobile entity from pos."""
         x, y = pos
         self._map[y][x] = self._map[y][x] & 0b1  # lesser bit carries ON_GOAL
 
-    def is_blocked(self, pos): # verifica se a posição pode ser ocupada (se está dentro do limite do mapa e se não é uma parede)
+    def is_blocked(self, pos):
         """Determine if mobile entity can be placed at pos."""
         x, y = pos
         if x not in range(self.hor_tiles) or y not in range(self.ver_tiles):
