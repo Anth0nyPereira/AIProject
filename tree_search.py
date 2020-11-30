@@ -117,6 +117,48 @@ class MyDomain:
             return True
         return False
 
+    def BoxesNextToWall(self, state_map, pos): # pos will be the final position of a box
+        x, y = pos
+        if state_map[y][x+1] == 4 or state_map[y][x-1] == 4:
+            if (state_map[y+1][x] == 8 and state_map[y+1][x+1] == 8) or (state_map[y+1][x] == 8 and state_map[y+1][x-1] == 8): # horizontal-down 2 boxes next to each other
+                return True
+            elif (state_map[y-1][x] == 8 and state_map[y-1][x+1] == 8) or (state_map[y-1][x] == 8 and state_map[y-1][x-1] == 8): # horizontal-up 2 boxes next to each other
+                return True
+        
+        elif state_map[y+1][x] == 4 or state_map[y-1][x] == 4:
+            if (state_map[y][x-1] == 8 and state_map[y+1][x-1] == 8) or (state_map[y][x-1] == 8 and state_map[y-1][x-1] == 8): # vertical-left 2 boxes next to each other
+                return True
+            elif (state_map[y][x+1] == 8 and state_map[y+1][x+1] == 8) or (state_map[y][x+1] == 8 and state_map[y-1][x+1] == 8): # vertical-right 2 boxes next to each other
+                return True
+        return False
+
+    def BoxNextWallNotGoal(self, state_map, pos):
+        # this method will check if a given position of a box (after the push) will stop or not to move in a specific orientation:
+        # if a goal exists and the box is near a wall, check if the box can achieve that goal
+        x, y = pos
+        boxes = state_map.boxes
+    
+        if state_map[y][x+1] == 8: # right-wall, can only move vertically -> same x
+            exists = [l for l in boxes if l[0][1] == x] 
+            if len(exists) == 0:
+                return True
+        
+        elif state_map[y][x-1] == 8: # left-wall, can only move vertically -> same x
+            exists = [l for l in boxes if l[0][1] == x] 
+            if len(exists) == 0:
+                return True
+
+        elif state_map[y+1][x] == 8: # down-wall, can only move horizontally -> same y
+            exists = [l for l in boxes if l[0][0] == y] 
+            if len(exists) == 0:
+                return True
+        
+        elif state_map[y-1][x] == 8: # up-wall, can only move horizontally -> same y
+            exists = [l for l in boxes if l[0][0] == y] 
+            if len(exists) == 0:
+                return True 
+
+        return False
 
     def actions(self, state_map): # valid actions for a given state
         actList = []
@@ -131,7 +173,8 @@ class MyDomain:
             actList.append('d')
         elif state_map.mapa[keeper_y][keeper_x + 1] == 4 or state_map.mapa[keeper_y][keeper_x + 1] == 5: # next position is a box or box on goal
             if (state_map.mapa[keeper_y][keeper_x + 2] == 0 and not self.cornerCheck(state_map.mapa, (keeper_x + 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x + 2] == 1: # the other position next to the 1st position is a floor or goal - push
-                actList.append('d')
+                if self.BoxesNextToWall(state_map.mapa, (keeper_x + 2, keeper_y)) == False:
+                    actList.append('d')
 
         if state_map.mapa[keeper_y][keeper_x - 1] == 0 or state_map.mapa[keeper_y][keeper_x - 1] == 1:
             actList.append('a')
