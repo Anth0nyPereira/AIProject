@@ -1,31 +1,25 @@
+ 
 import asyncio
 import getpass
 import json
 import os
-import time
+import random
 
 import websockets
 from mapa import Map
-from tree_search import *
 
 async def solver(puzzle, solution):
     while True:
         game_properties = await puzzle.get()
         mapa = Map(game_properties["map"])
-        my_dom = MyDomain(mapa._map)
-        my_prob = MyProblem(my_dom)
-        my_tree = MyTree(my_prob)
-        win_the_game = my_tree.search()
-        print(win_the_game)
-        keys = win_the_game
-        
+        print(mapa)
 
         while True:
-            await asyncio.sleep(0)  # this should be 0 in your code and this is REQUIRED
+            await asyncio.sleep(0.1)  # this should be 0 in your code and this is REQUIRED
             break
 
+        keys = "sawdddsawaassdwawdwwasdssddwasaww"
         await solution.put(keys)
-
 
 async def agent_loop(puzzle, solution, server_address="localhost:8000", agent_name="student"):
     async with websockets.connect(f"ws://{server_address}/player") as websocket:
@@ -60,7 +54,6 @@ async def agent_loop(puzzle, solution, server_address="localhost:8000", agent_na
             except websockets.exceptions.ConnectionClosedOK:
                 print("Server has cleanly disconnected us")
                 return
-
 
 # DO NOT CHANGE THE LINES BELLOW
 # You can change the default values using the command line, example:

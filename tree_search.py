@@ -1,7 +1,7 @@
 from audioop import add
 from functools import reduce
 import copy
-
+import asyncio
 #-------------------------------------------------------MYMAP------------------------------------------------------------
 from game import logger
 
@@ -173,8 +173,7 @@ class MyDomain:
             actList.append('d')
         elif state_map.mapa[keeper_y][keeper_x + 1] == 4 or state_map.mapa[keeper_y][keeper_x + 1] == 5: # next position is a box or box on goal
             if (state_map.mapa[keeper_y][keeper_x + 2] == 0 and not self.cornerCheck(state_map.mapa, (keeper_x + 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x + 2] == 1: # the other position next to the 1st position is a floor or goal - push
-                if self.BoxesNextToWall(state_map.mapa, (keeper_x + 2, keeper_y)) == False:
-                    actList.append('d')
+                actList.append('d')
 
         if state_map.mapa[keeper_y][keeper_x - 1] == 0 or state_map.mapa[keeper_y][keeper_x - 1] == 1:
             actList.append('a')
@@ -333,8 +332,9 @@ class MyTree:
         return round((self.terminals + self.non_terminals - 1) / self.non_terminals, 2) # 2 decimal figures
         
     # search for solution TODO: put the async here
-    def search(self, limit=None):
+    async def search(self, limit=None):
         while self.open_nodes != []:
+            await asyncio.sleep(0)
             node = self.open_nodes.pop(0)
             if self.problem.goal_test(node.state_map):
                 self.solution = node
