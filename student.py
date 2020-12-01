@@ -15,15 +15,10 @@ async def solver(puzzle, solution):
         my_dom = MyDomain(mapa._map)
         my_prob = MyProblem(my_dom)
         my_tree = MyTree(my_prob)
-        win_the_game = my_tree.search()
+        win_the_game = await my_tree.search()
         print(win_the_game)
         keys = win_the_game
         
-
-        while True:
-            await asyncio.sleep(0)  # this should be 0 in your code and this is REQUIRED
-            break
-
         await solution.put(keys)
 
 
