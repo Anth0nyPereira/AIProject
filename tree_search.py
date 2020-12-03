@@ -163,6 +163,14 @@ class MyDomain:
 
         return False
 
+    def deadlocks(self, state_map, mapa, pos):
+        deadlock1 = self.cornerCheck(state_map, pos)
+        #deadlock2 = self.BoxesNextToWall(state_map, pos)
+        deadlock3 = self.BoxNextWallNotGoal(mapa, pos)
+        if deadlock1 or deadlock3:
+            return True
+        return False
+
     def actions(self, state_map): # valid actions for a given state
         actList = []
 
@@ -175,42 +183,29 @@ class MyDomain:
         if state_map.mapa[keeper_y][keeper_x + 1] == 0 or state_map.mapa[keeper_y][keeper_x + 1] == 1: # next position is a floor or goal - move
             actList.append('d')
         elif state_map.mapa[keeper_y][keeper_x + 1] == 4 or state_map.mapa[keeper_y][keeper_x + 1] == 5: # next position is a box or box on goal
-            #if (state_map.mapa[keeper_y][keeper_x + 2] == 0 and not self.BoxesNextToWall(state_map.mapa, (keeper_x + 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x + 2] == 1:
-            #    actList.append('d') 
-            if (state_map.mapa[keeper_y][keeper_x + 2] == 0 and not self.BoxNextWallNotGoal(state_map, (keeper_x + 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x + 2] == 1:
-                actList.append('d')
-            if (state_map.mapa[keeper_y][keeper_x + 2] == 0 and not self.cornerCheck(state_map.mapa, (keeper_x + 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x + 2] == 1: # the other position next to the 1st position is a floor or goal - push
-                actList.append('d')
-
+            if (state_map.mapa[keeper_y][keeper_x + 2] == 0 and not self.deadlocks(state_map.mapa, state_map, (keeper_x + 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x + 2] == 1:
+                actList.append('d') 
+            
         if state_map.mapa[keeper_y][keeper_x - 1] == 0 or state_map.mapa[keeper_y][keeper_x - 1] == 1:
             actList.append('a')
         elif state_map.mapa[keeper_y][keeper_x - 1] == 4 or state_map.mapa[keeper_y][keeper_x - 1] == 5:
-            #if (state_map.mapa[keeper_y][keeper_x - 2] == 0 and not self.BoxesNextToWall(state_map.mapa, (keeper_x - 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x - 2] == 1:
-            #    actList.append('a')
-            if (state_map.mapa[keeper_y][keeper_x - 2] == 0 and not self.BoxNextWallNotGoal(state_map, (keeper_x - 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x - 2] == 1:
+            if (state_map.mapa[keeper_y][keeper_x - 2] == 0 and not self.deadlocks(state_map.mapa, state_map, (keeper_x - 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x - 2] == 1:
                 actList.append('a')
-            if (state_map.mapa[keeper_y][keeper_x - 2] == 0 and not self.cornerCheck(state_map.mapa, (keeper_x - 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x - 2] == 1:
-                actList.append('a')
+            
         
         if state_map.mapa[keeper_y + 1][keeper_x] == 0 or state_map.mapa[keeper_y + 1][keeper_x] == 1:
             actList.append('s')
         elif state_map.mapa[keeper_y + 1][keeper_x] == 4 or state_map.mapa[keeper_y + 1][keeper_x] == 5:
-            #if (state_map.mapa[keeper_y + 2][keeper_x] == 0 and not self.BoxesNextToWall(state_map.mapa, (keeper_x, keeper_y + 2))) or state_map.mapa[keeper_y + 2][keeper_x] == 1:
-            #    actList.append('s')
-            if (state_map.mapa[keeper_y + 2][keeper_x] == 0 and not self.BoxNextWallNotGoal(state_map, (keeper_x, keeper_y + 2))) or state_map.mapa[keeper_y + 2][keeper_x] == 1:
+            if (state_map.mapa[keeper_y + 2][keeper_x] == 0 and not self.deadlocks(state_map.mapa, state_map, (keeper_x, keeper_y + 2))) or state_map.mapa[keeper_y + 2][keeper_x] == 1:
                 actList.append('s')
-            if (state_map.mapa[keeper_y + 2][keeper_x] == 0 and not self.cornerCheck(state_map.mapa, (keeper_x, keeper_y + 2))) or state_map.mapa[keeper_y + 2][keeper_x] == 1:
-                actList.append('s')
+            
 
         if state_map.mapa[keeper_y - 1][keeper_x] == 0 or state_map.mapa[keeper_y - 1][keeper_x] == 1:
             actList.append('w')
         elif state_map.mapa[keeper_y - 1][keeper_x] == 4 or state_map.mapa[keeper_y - 1][keeper_x] == 5:
-            #if (state_map.mapa[keeper_y - 2][keeper_x] == 0 and not self.BoxesNextToWall(state_map.mapa, (keeper_x, keeper_y - 2))) or state_map.mapa[keeper_y - 2][keeper_x] == 1:
-            #    actList.append('w')
-            if (state_map.mapa[keeper_y - 2][keeper_x] == 0 and not self.BoxNextWallNotGoal(state_map, (keeper_x, keeper_y - 2))) or state_map.mapa[keeper_y - 2][keeper_x] == 1:
+            if (state_map.mapa[keeper_y - 2][keeper_x] == 0 and not self.deadlocks(state_map.mapa, state_map, (keeper_x, keeper_y - 2))) or state_map.mapa[keeper_y - 2][keeper_x] == 1:
                 actList.append('w')
-            if (state_map.mapa[keeper_y - 2][keeper_x] == 0 and not self.cornerCheck(state_map.mapa, (keeper_x, keeper_y - 2))) or state_map.mapa[keeper_y - 2][keeper_x] == 1:
-                actList.append('w')
+            
         
         return actList 
     
