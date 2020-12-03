@@ -54,7 +54,6 @@ class MyMap:
 
         return self._keeper
 
-
     @property
     def boxes(self):
         """List of coordinates of the boxes."""
@@ -103,7 +102,6 @@ class MyMap:
 class MyDomain:
     def __init__(self, initial):
         self.initial = initial
-    
 
     def cornerCheck(self,state_map, pos): # pos will be the final position of a box
         x,y = pos
@@ -119,42 +117,47 @@ class MyDomain:
 
     def BoxesNextToWall(self, state_map, pos): # pos will be the final position of a box
         x, y = pos
-        if state_map[y][x+1] == 4 or state_map[y][x-1] == 4:
-            if (state_map[y+1][x] == 8 and state_map[y+1][x+1] == 8) or (state_map[y+1][x] == 8 and state_map[y+1][x-1] == 8): # horizontal-down 2 boxes next to each other
-                return True
-            elif (state_map[y-1][x] == 8 and state_map[y-1][x+1] == 8) or (state_map[y-1][x] == 8 and state_map[y-1][x-1] == 8): # horizontal-up 2 boxes next to each other
-                return True
-        
-        elif state_map[y+1][x] == 4 or state_map[y-1][x] == 4:
-            if (state_map[y][x-1] == 8 and state_map[y+1][x-1] == 8) or (state_map[y][x-1] == 8 and state_map[y-1][x-1] == 8): # vertical-left 2 boxes next to each other
-                return True
-            elif (state_map[y][x+1] == 8 and state_map[y+1][x+1] == 8) or (state_map[y][x+1] == 8 and state_map[y-1][x+1] == 8): # vertical-right 2 boxes next to each other
-                return True
+        if state_map[y][x+1] == 4 and (state_map[y+1][x] == 8 and state_map[y+1][x+1] == 8):
+            return True
+        elif state_map[y][x-1] == 4 and (state_map[y+1][x] == 8 and state_map[y+1][x-1] == 8):
+            return True
+        elif state_map[y][x+1] == 4 and (state_map[y-1][x] == 8 and state_map[y-1][x+1] == 8):
+            return True
+        elif state_map[y][x-1] == 4 and (state_map[y-1][x] == 8 and state_map[y-1][x-1] == 8):
+            return True
+        elif state_map[y+1][x] == 4 and (state_map[y][x-1] == 8 and state_map[y+1][x-1] == 8):
+            return True
+        elif state_map[y-1][x] == 4 and (state_map[y][x-1] == 8 and state_map[y-1][x-1] == 8):
+            return True
+        elif state_map[y+1][x] == 4 and (state_map[y][x+1] == 8 and state_map[y+1][x+1] == 8):
+            return True
+        elif state_map[y-1][x] == 4 and (state_map[y][x+1] == 8 and state_map[y-1][x+1] == 8):
+            return True
         return False
 
     def BoxNextWallNotGoal(self, state_map, pos):
         # this method will check if a given position of a box (after the push) will stop or not to move in a specific orientation:
         # if a goal exists and the box is near a wall, check if the box can achieve that goal
         x, y = pos
-        boxes = state_map.boxes
+        goals = state_map.empty_goals
     
-        if state_map[y][x+1] == 8: # right-wall, can only move vertically -> same x
-            exists = [l for l in boxes if l[0][1] == x] 
+        if state_map.mapa[y][x+1] == 8: # right-wall, can only move vertically -> same x
+            exists = [l for l in goals if l[0] == x] 
             if len(exists) == 0:
                 return True
         
-        elif state_map[y][x-1] == 8: # left-wall, can only move vertically -> same x
-            exists = [l for l in boxes if l[0][1] == x] 
+        elif state_map.mapa[y][x-1] == 8: # left-wall, can only move vertically -> same x
+            exists = [l for l in goals if l[0] == x] 
             if len(exists) == 0:
                 return True
 
-        elif state_map[y+1][x] == 8: # down-wall, can only move horizontally -> same y
-            exists = [l for l in boxes if l[0][0] == y] 
+        elif state_map.mapa[y+1][x] == 8: # down-wall, can only move horizontally -> same y
+            exists = [l for l in goals if l[1] == y] 
             if len(exists) == 0:
                 return True
         
-        elif state_map[y-1][x] == 8: # up-wall, can only move horizontally -> same y
-            exists = [l for l in boxes if l[0][0] == y] 
+        elif state_map.mapa[y-1][x] == 8: # up-wall, can only move horizontally -> same y
+            exists = [l for l in goals if l[1] == y] 
             if len(exists) == 0:
                 return True 
 
@@ -172,31 +175,44 @@ class MyDomain:
         if state_map.mapa[keeper_y][keeper_x + 1] == 0 or state_map.mapa[keeper_y][keeper_x + 1] == 1: # next position is a floor or goal - move
             actList.append('d')
         elif state_map.mapa[keeper_y][keeper_x + 1] == 4 or state_map.mapa[keeper_y][keeper_x + 1] == 5: # next position is a box or box on goal
+            #if (state_map.mapa[keeper_y][keeper_x + 2] == 0 and not self.BoxesNextToWall(state_map.mapa, (keeper_x + 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x + 2] == 1:
+            #    actList.append('d') 
+            if (state_map.mapa[keeper_y][keeper_x + 2] == 0 and not self.BoxNextWallNotGoal(state_map, (keeper_x + 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x + 2] == 1:
+                actList.append('d')
             if (state_map.mapa[keeper_y][keeper_x + 2] == 0 and not self.cornerCheck(state_map.mapa, (keeper_x + 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x + 2] == 1: # the other position next to the 1st position is a floor or goal - push
                 actList.append('d')
 
         if state_map.mapa[keeper_y][keeper_x - 1] == 0 or state_map.mapa[keeper_y][keeper_x - 1] == 1:
             actList.append('a')
         elif state_map.mapa[keeper_y][keeper_x - 1] == 4 or state_map.mapa[keeper_y][keeper_x - 1] == 5:
+            #if (state_map.mapa[keeper_y][keeper_x - 2] == 0 and not self.BoxesNextToWall(state_map.mapa, (keeper_x - 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x - 2] == 1:
+            #    actList.append('a')
+            if (state_map.mapa[keeper_y][keeper_x - 2] == 0 and not self.BoxNextWallNotGoal(state_map, (keeper_x - 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x - 2] == 1:
+                actList.append('a')
             if (state_map.mapa[keeper_y][keeper_x - 2] == 0 and not self.cornerCheck(state_map.mapa, (keeper_x - 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x - 2] == 1:
                 actList.append('a')
         
         if state_map.mapa[keeper_y + 1][keeper_x] == 0 or state_map.mapa[keeper_y + 1][keeper_x] == 1:
             actList.append('s')
         elif state_map.mapa[keeper_y + 1][keeper_x] == 4 or state_map.mapa[keeper_y + 1][keeper_x] == 5:
+            #if (state_map.mapa[keeper_y + 2][keeper_x] == 0 and not self.BoxesNextToWall(state_map.mapa, (keeper_x, keeper_y + 2))) or state_map.mapa[keeper_y + 2][keeper_x] == 1:
+            #    actList.append('s')
+            if (state_map.mapa[keeper_y + 2][keeper_x] == 0 and not self.BoxNextWallNotGoal(state_map, (keeper_x, keeper_y + 2))) or state_map.mapa[keeper_y + 2][keeper_x] == 1:
+                actList.append('s')
             if (state_map.mapa[keeper_y + 2][keeper_x] == 0 and not self.cornerCheck(state_map.mapa, (keeper_x, keeper_y + 2))) or state_map.mapa[keeper_y + 2][keeper_x] == 1:
                 actList.append('s')
 
         if state_map.mapa[keeper_y - 1][keeper_x] == 0 or state_map.mapa[keeper_y - 1][keeper_x] == 1:
             actList.append('w')
         elif state_map.mapa[keeper_y - 1][keeper_x] == 4 or state_map.mapa[keeper_y - 1][keeper_x] == 5:
+            #if (state_map.mapa[keeper_y - 2][keeper_x] == 0 and not self.BoxesNextToWall(state_map.mapa, (keeper_x, keeper_y - 2))) or state_map.mapa[keeper_y - 2][keeper_x] == 1:
+            #    actList.append('w')
+            if (state_map.mapa[keeper_y - 2][keeper_x] == 0 and not self.BoxNextWallNotGoal(state_map, (keeper_x, keeper_y - 2))) or state_map.mapa[keeper_y - 2][keeper_x] == 1:
+                actList.append('w')
             if (state_map.mapa[keeper_y - 2][keeper_x] == 0 and not self.cornerCheck(state_map.mapa, (keeper_x, keeper_y - 2))) or state_map.mapa[keeper_y - 2][keeper_x] == 1:
                 actList.append('w')
         
         return actList 
-
-    
-
     
     def result(self,state_map,action): # result of an action in a given state (aka next state given an action)
         new_map = MyMap(copy.deepcopy(state_map.mapa))
@@ -339,6 +355,7 @@ class MyTree:
             if self.problem.goal_test(node.state_map):
                 self.solution = node
                 self.terminals = len(self.open_nodes) + 1
+                print(self.get_plan(node))
                 return self.get_plan(node)
             self.non_terminals += 1 # the open node we just popped now has children
             lnewnodes = []
