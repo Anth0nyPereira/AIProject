@@ -165,11 +165,11 @@ class MyDomain:
 
     def deadlocks(self, state_map, mapa, pos):
         deadlock1 = self.cornerCheck(state_map, pos)
-        #deadlock2 = self.BoxesNextToWall(state_map, pos)
-        deadlock3 = self.BoxNextWallNotGoal(mapa, pos)
-        if deadlock1 or deadlock3:
-            return True
-        return False
+        print("starting deadlock 2")
+        deadlock2 = self.BoxesNextToWall(state_map, pos)
+        print("ending deadlock 2")
+        #deadlock3 = self.BoxNextWallNotGoal(mapa, pos)
+        return deadlock1 or deadlock2
 
     def actions(self, state_map): # valid actions for a given state
         actList = []
