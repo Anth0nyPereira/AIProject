@@ -379,7 +379,7 @@ class MyDomain:
         min_dist = 1000
         for box in boxes:
             bx, by = box
-            dist = math.hypot(x - bx, y -by)
+            dist = abs(x - bx) + abs(y-by)
             min_dist = dist if dist < min_dist else min_dist
 
         return min_dist
