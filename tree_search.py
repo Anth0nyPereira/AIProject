@@ -2,6 +2,7 @@ from audioop import add
 from functools import reduce
 import copy
 import asyncio
+import math
 #-------------------------------------------------------MYMAP------------------------------------------------------------
 from game import logger
 
@@ -105,7 +106,7 @@ class MyDomain:
 
     def cornerCheck(self,state_map, pos): # pos will be the final position of a box
         x,y = pos
-        if state_map[y+1][x] == 8 and state_map[y][x+1] == 8: # down and right are walls 
+        if state_map[y+1][x] == 8 and state_map[y][x+1] == 8: # down and right are walls
             return True
         elif state_map[y+1][x] == 8 and state_map[y][x-1] == 8: # down and left are walls
             return True
@@ -123,28 +124,28 @@ class MyDomain:
 
         state_map.clear_tile(pos_init)
         
-        if mapa[y][x+1] == 4 and (mapa[y+1][x] == 8 and mapa[y+1][x+1] == 8):
+        if mapa[y][x+1] in [4,5] and (mapa[y+1][x] == 8 and mapa[y+1][x+1] == 8):
             state_map.set_tile(pos_init, state)
             return True
-        elif mapa[y][x-1] == 4 and (mapa[y+1][x] == 8 and mapa[y+1][x-1] == 8):
+        elif mapa[y][x-1] in [4,5] and (mapa[y+1][x] == 8 and mapa[y+1][x-1] == 8):
             state_map.set_tile(pos_init, state)
             return True
-        elif mapa[y][x+1] == 4 and (mapa[y-1][x] == 8 and mapa[y-1][x+1] == 8):
+        elif mapa[y][x+1] in [4,5] and (mapa[y-1][x] == 8 and mapa[y-1][x+1] == 8):
             state_map.set_tile(pos_init, state)
             return True
-        elif mapa[y][x-1] == 4 and (mapa[y-1][x] == 8 and mapa[y-1][x-1] == 8):
+        elif mapa[y][x-1] in [4,5] and (mapa[y-1][x] == 8 and mapa[y-1][x-1] == 8):
             state_map.set_tile(pos_init, state)
             return True
-        elif mapa[y+1][x] == 4 and (mapa[y][x-1] == 8 and mapa[y+1][x-1] == 8):
+        elif mapa[y+1][x] in [4,5] and (mapa[y][x-1] == 8 and mapa[y+1][x-1] == 8):
             state_map.set_tile(pos_init, state)
             return True
-        elif mapa[y-1][x] == 4 and (mapa[y][x-1] == 8 and mapa[y-1][x-1] == 8):
+        elif mapa[y-1][x] in [4,5] and (mapa[y][x-1] == 8 and mapa[y-1][x-1] == 8):
             state_map.set_tile(pos_init, state)
             return True
-        elif mapa[y+1][x] == 4 and (mapa[y][x+1] == 8 and mapa[y+1][x+1] == 8):
+        elif mapa[y+1][x] in [4,5] and (mapa[y][x+1] == 8 and mapa[y+1][x+1] == 8):
             state_map.set_tile(pos_init, state)
             return True
-        elif mapa[y-1][x] == 4 and (mapa[y][x+1] == 8 and mapa[y-1][x+1] == 8):
+        elif mapa[y-1][x] in [4,5] and (mapa[y][x+1] == 8 and mapa[y-1][x+1] == 8):
             state_map.set_tile(pos_init, state)
             return True
         state_map.set_tile(pos_init, state)
@@ -161,60 +162,124 @@ class MyDomain:
         state_map.clear_tile(pos_init)
         goals = state_map.empty_goals
 
-        deadlock1 = False
-        if state_map.mapa[y][x+1] == 8: # right-wall, can only move vertically -> same x
-            deadlock1 = True
-            for line in range(len(state_map.mapa)):
-                if state_map.mapa[line][x+1] != 8:
-                    deadlock1 = False
+        if state_map.mapa[y][x+1] == 8: # right-wall
+            lastWall = y
+            firstWall = y
+            for line in range(y, len(state_map.mapa)):  #from our line to the end, check if there's a hole in the right wall below our position
+                if state_map.mapa[line][x+1] == 8:
+                    lastWall = line
+                else:                                   #when we find a hole, we know in which line the wall ends (lastwall)
+                    break
             
-            if deadlock1:
-                exists = [l for l in goals if l[0] == x] 
-                if len(exists) != 0:
+            for line in range(y, lastWall+1):           #we're half blocked if we have a box below us but before the wall opening 
+                if state_map.mapa[line][x] == 1:
                     state_map.set_tile(pos_init, state)
-                    deadlock1 = False
+                    return False                        #unless we find a goal in the way 
+                if state_map.mapa[line][x] == 8:        # now let's check our way up
+                    for line in range(y, -1, -1):       #from our line to the top, check if there's a hole in the right wall before our position
+                        if state_map.mapa[line][x+1] == 8: 
+                            firstWall = line
+                        else:                           #when we find a hole, we know in which line the wall starts (firstwall)
+                            break
+                    
+                    for line in range(y, firstWall-1, -1):  #now we're fully blocked if we have a box above us but after the wall opening
+                        if state_map.mapa[line][x] == 1:
+                            state_map.set_tile(pos_init, state)
+                            return False                    #unless we find a goal in the way
+                        if state_map.mapa[line][x] == 8:
+                            state_map.set_tile(pos_init, state)
+                            return True
         
-        deadlock2 = False
-        if state_map.mapa[y][x-1] == 8: # left-wall, can only move vertically -> same x
-            deadlock2 = True
-            for line in range(len(state_map.mapa)):
-                if state_map.mapa[line][x-1] != 8:
-                    deadlock2 = False
-
-
-            if deadlock2:
-                exists = [l for l in goals if l[0] == x] 
-                if len(exists) != 0:
-                    state_map.set_tile(pos_init, state)
-                    deadlock2 = False
-
-        deadlock3 = False
-        if state_map.mapa[y+1][x] == 8: # down-wall, can only move horizontally -> same y
-            deadlock3 = all(t == 8 for t in state_map.mapa[y+1])
-
-            if deadlock3:
-                exists = [l for l in goals if l[1] == y] 
-                if len(exists) != 0:
-                    state_map.set_tile(pos_init, state)
-                    deadlock3 = False
-        
-        deadlock4 = False
-        if state_map.mapa[y-1][x] == 8: # up-wall, can only move horizontally -> same y
-            deadlock4 = all(t == 8 for t in state_map.mapa[y-1])
+        if state_map.mapa[y][x-1] == 8: # left-wall
+            lastWall = y
+            firstWall = y
+            for line in range(y, len(state_map.mapa)):  #from our line to the end, check if there's a hole in the left wall below our position
+                if state_map.mapa[line][x-1] == 8:
+                    lastWall = line
+                else:                                   #when we find a hole, we know in which line the wall ends (lastwall)
+                    break
             
-            if deadlock4:
-                exists = [l for l in goals if l[1] == y] 
-                if len(exists) != 0:
+            for line in range(y, lastWall+1):           #we're half blocked if we have a box below us but before the wall opening 
+                if state_map.mapa[line][x] == 1:
                     state_map.set_tile(pos_init, state)
-                    deadlock4 = False
-        
+                    return False                        #unless we find a goal in the way 
+                if state_map.mapa[line][x] == 8:        # now let's check our way up
+                    for line in range(y, -1, -1):       #from our line to the top, check if there's a hole in the right wall before our position
+                        if state_map.mapa[line][x-1] == 8: 
+                            firstWall = line
+                        else:                           #when we find a hole, we know in which line the wall starts (firstwall)
+                            break
+                    
+                    for line in range(y, firstWall-1, -1):  #now we're fully blocked if we have a box above us but after the wall opening
+                        if state_map.mapa[line][x] == 1:
+                            state_map.set_tile(pos_init, state)
+                            return False                    #unless we find a goal in the way
+                        if state_map.mapa[line][x] == 8:
+                            state_map.set_tile(pos_init, state)
+                            return True
+
+        if state_map.mapa[y+1][x] == 8: # down-wall
+            rightWall = x
+            leftWall = x
+            for col in range(x, state_map.hor_tiles):  #from our column to the end, check if there's a hole in the down-wall on the right of our position
+                if state_map.mapa[y+1][col] == 8:
+                    rightWall = col
+                else:                                   #when we find a hole, we know in which column the wall ends (rightWall)
+                    break
+            
+            for col in range(x, rightWall+1):           #we're half blocked if we have a box on our right but before the wall opening 
+                if state_map.mapa[y][col] == 1:
+                    state_map.set_tile(pos_init, state)
+                    return False                        #unless we find a goal in the way 
+                if state_map.mapa[y][col] == 8:        # now let's check on our left
+                    for col in range(x, -1, -1):       #from our column to the left, check if there's a hole in the down-wall on the left of our position
+                        if state_map.mapa[y+1][col] == 8: 
+                            leftWall = col
+                        else:                           #when we find a hole, we know in which column the wall starts (firstwall)
+                            break
+                    
+                    for col in range(y, leftWall-1, -1):  #now we're fully blocked if we have a box on our left but after the wall opening
+                        if state_map.mapa[y][col] == 1:
+                            state_map.set_tile(pos_init, state)
+                            return False                    #unless we find a goal in the way
+                        if state_map.mapa[y][col] == 8:
+                            state_map.set_tile(pos_init, state)
+                            return True
+
+        if state_map.mapa[y-1][x] == 8: # up-wall
+            rightWall = x
+            leftWall = x
+            for col in range(x, state_map.hor_tiles):  #from our column to the end, check if there's a hole in the up-wall on the right of our position
+                if state_map.mapa[y-1][col] == 8:
+                    rightWall = col
+                else:                                   #when we find a hole, we know in which column the wall ends (rightWall)
+                    break
+            
+            for col in range(x, rightWall+1):           #we're half blocked if we have a box on our right but before the wall opening 
+                if state_map.mapa[y][col] == 1:
+                    state_map.set_tile(pos_init, state)
+                    return False                        #unless we find a goal in the way 
+                if state_map.mapa[y][col] == 8:        # now let's check on our left
+                    for col in range(x, -1, -1):       #from our column to the left, check if there's a hole in the up-wall on the left of our position
+                        if state_map.mapa[y-1][col] == 8: 
+                            leftWall = col
+                        else:                           #when we find a hole, we know in which column the wall starts (firstwall)
+                            break
+                    
+                    for col in range(y, leftWall-1, -1):  #now we're fully blocked if we have a box on our left but after the wall opening
+                        if state_map.mapa[y][col] == 1:
+                            state_map.set_tile(pos_init, state)
+                            return False                    #unless we find a goal in the way
+                        if state_map.mapa[y][col] == 8:
+                            state_map.set_tile(pos_init, state)
+                            return True
         state_map.set_tile(pos_init, state)
-        return deadlock1 or deadlock2 or deadlock3 or deadlock4
+        return False
 
     def deadlocks(self, state_map, pos_init, pos):
         deadlock = self.cornerCheck(state_map.mapa, pos)
-        if not deadlock:
-            deadlock = self.BoxesNextToWall(state_map, pos_init, pos)
+        #if not deadlock:
+        #    deadlock = self.BoxesNextToWall(state_map, pos_init, pos)
         if not deadlock:
             deadlock = self.BoxNextWallNotGoal(state_map, pos_init, pos)
         return deadlock
@@ -227,7 +292,6 @@ class MyDomain:
         # for each direction, if the next tile is "empty", the action is valid
         # if the next tile has a box, then the action is only valid if the other next tile is "empty" and not a corner
         # TODO: add cornercheck and blockedcheck
-
         if state_map.mapa[keeper_y][keeper_x + 1] == 0 or state_map.mapa[keeper_y][keeper_x + 1] == 1: # next position is a floor or goal - move
             actList.append('d')
         elif state_map.mapa[keeper_y][keeper_x + 1] == 4 or state_map.mapa[keeper_y][keeper_x + 1] == 5: # next position is a box or box on goal
@@ -309,8 +373,16 @@ class MyDomain:
     def satisfies(self, state_map): # test if the given "goal" is satisfied in "state"
         return state_map.empty_goals == []
 
-    def cost(self, state, action):
-        return 1
+    def heuristic(self, state_map):
+        x,y = state_map.keeper
+        boxes = state_map.boxes
+        min_dist = 1000
+        for box in boxes:
+            bx, by = box
+            dist = math.hypot(x - bx, y -by)
+            min_dist = dist if dist < min_dist else min_dist
+
+        return min_dist
     
 
 #------------------------------------------------------------------------------------------------------------------------
@@ -329,10 +401,11 @@ class MyProblem:
 
 # Nos de uma arvore de pesquisa
 class MyNode:
-    def __init__(self,state_map,parent,depth,action): 
+    def __init__(self,state_map,parent,depth, heuristic, action): 
         self.state_map = state_map
         self.parent = parent
         self.depth = depth
+        self.heuristic = heuristic
         self.action = action
             
     # preventing cycles
@@ -357,7 +430,7 @@ class MyNode:
 class MyTree:
     def __init__(self,problem): 
         self.problem = problem
-        root = MyNode(MyMap(problem.initial), None, 0, None)
+        root = MyNode(MyMap(problem.initial), None, 0, 0, None)
         self.open_nodes = [root]
         self.solution = None
         self.terminals = 1  #root starts as terminal
@@ -403,8 +476,8 @@ class MyTree:
             lnewnodes = []
             for key in self.problem.domain.actions(node.state_map): # for each avaliable action on this state
                 newstate = self.problem.domain.result(node.state_map,key)
-                newnode = MyNode(newstate, node, node.depth+1, key) # creating child node
+                newnode = MyNode(newstate, node, node.depth+1, self.problem.domain.heuristic(newstate), key) # creating child node
                 if not node.in_parent(newstate) and (limit == None or newnode.depth <= limit):
                     lnewnodes.append(newnode)
-            self.open_nodes.extend(lnewnodes)
+            self.open_nodes = sorted(self.open_nodes + lnewnodes, key=lambda node: node.heuristic) 
         return None
