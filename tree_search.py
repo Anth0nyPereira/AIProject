@@ -115,61 +115,109 @@ class MyDomain:
             return True
         return False
 
-    def BoxesNextToWall(self, state_map, pos): # pos will be the final position of a box
+    def BoxesNextToWall(self, state_map, pos_init, pos): # pos will be the final position of a box
         x, y = pos
-        if state_map[y][x+1] == 4 and (state_map[y+1][x] == 8 and state_map[y+1][x+1] == 8):
+        mapa = state_map.mapa
+
+        state = 4 if mapa[y][x] == 4 else 5
+
+        state_map.clear_tile(pos_init)
+        
+        if mapa[y][x+1] == 4 and (mapa[y+1][x] == 8 and mapa[y+1][x+1] == 8):
+            state_map.set_tile(pos_init, state)
             return True
-        elif state_map[y][x-1] == 4 and (state_map[y+1][x] == 8 and state_map[y+1][x-1] == 8):
+        elif mapa[y][x-1] == 4 and (mapa[y+1][x] == 8 and mapa[y+1][x-1] == 8):
+            state_map.set_tile(pos_init, state)
             return True
-        elif state_map[y][x+1] == 4 and (state_map[y-1][x] == 8 and state_map[y-1][x+1] == 8):
+        elif mapa[y][x+1] == 4 and (mapa[y-1][x] == 8 and mapa[y-1][x+1] == 8):
+            state_map.set_tile(pos_init, state)
             return True
-        elif state_map[y][x-1] == 4 and (state_map[y-1][x] == 8 and state_map[y-1][x-1] == 8):
+        elif mapa[y][x-1] == 4 and (mapa[y-1][x] == 8 and mapa[y-1][x-1] == 8):
+            state_map.set_tile(pos_init, state)
             return True
-        elif state_map[y+1][x] == 4 and (state_map[y][x-1] == 8 and state_map[y+1][x-1] == 8):
+        elif mapa[y+1][x] == 4 and (mapa[y][x-1] == 8 and mapa[y+1][x-1] == 8):
+            state_map.set_tile(pos_init, state)
             return True
-        elif state_map[y-1][x] == 4 and (state_map[y][x-1] == 8 and state_map[y-1][x-1] == 8):
+        elif mapa[y-1][x] == 4 and (mapa[y][x-1] == 8 and mapa[y-1][x-1] == 8):
+            state_map.set_tile(pos_init, state)
             return True
-        elif state_map[y+1][x] == 4 and (state_map[y][x+1] == 8 and state_map[y+1][x+1] == 8):
+        elif mapa[y+1][x] == 4 and (mapa[y][x+1] == 8 and mapa[y+1][x+1] == 8):
+            state_map.set_tile(pos_init, state)
             return True
-        elif state_map[y-1][x] == 4 and (state_map[y][x+1] == 8 and state_map[y-1][x+1] == 8):
+        elif mapa[y-1][x] == 4 and (mapa[y][x+1] == 8 and mapa[y-1][x+1] == 8):
+            state_map.set_tile(pos_init, state)
             return True
+        state_map.set_tile(pos_init, state)
         return False
 
-    def BoxNextWallNotGoal(self, state_map, pos):
+    def BoxNextWallNotGoal(self, state_map, pos_init, pos):
         # this method will check if a given position of a box (after the push) will stop or not to move in a specific orientation:
         # if a goal exists and the box is near a wall, check if the box can achieve that goal
         x, y = pos
+        mapa = state_map.mapa
+
+        state = 4 if mapa[y][x] == 4 else 5
+
+        state_map.clear_tile(pos_init)
         goals = state_map.empty_goals
-    
+
+        deadlock1 = False
         if state_map.mapa[y][x+1] == 8: # right-wall, can only move vertically -> same x
-            exists = [l for l in goals if l[0] == x] 
-            if len(exists) == 0:
-                return True
+            deadlock1 = True
+            for line in range(len(state_map.mapa)):
+                if state_map.mapa[line][x+1] != 8:
+                    deadlock1 = False
+            
+            if deadlock1:
+                exists = [l for l in goals if l[0] == x] 
+                if len(exists) != 0:
+                    state_map.set_tile(pos_init, state)
+                    deadlock1 = False
         
-        elif state_map.mapa[y][x-1] == 8: # left-wall, can only move vertically -> same x
-            exists = [l for l in goals if l[0] == x] 
-            if len(exists) == 0:
-                return True
+        deadlock2 = False
+        if state_map.mapa[y][x-1] == 8: # left-wall, can only move vertically -> same x
+            deadlock2 = True
+            for line in range(len(state_map.mapa)):
+                if state_map.mapa[line][x-1] != 8:
+                    deadlock2 = False
 
-        elif state_map.mapa[y+1][x] == 8: # down-wall, can only move horizontally -> same y
-            exists = [l for l in goals if l[1] == y] 
-            if len(exists) == 0:
-                return True
+
+            if deadlock2:
+                exists = [l for l in goals if l[0] == x] 
+                if len(exists) != 0:
+                    state_map.set_tile(pos_init, state)
+                    deadlock2 = False
+
+        deadlock3 = False
+        if state_map.mapa[y+1][x] == 8: # down-wall, can only move horizontally -> same y
+            deadlock3 = all(t == 8 for t in state_map.mapa[y+1])
+
+            if deadlock3:
+                exists = [l for l in goals if l[1] == y] 
+                if len(exists) != 0:
+                    state_map.set_tile(pos_init, state)
+                    deadlock3 = False
         
-        elif state_map.mapa[y-1][x] == 8: # up-wall, can only move horizontally -> same y
-            exists = [l for l in goals if l[1] == y] 
-            if len(exists) == 0:
-                return True 
+        deadlock4 = False
+        if state_map.mapa[y-1][x] == 8: # up-wall, can only move horizontally -> same y
+            deadlock4 = all(t == 8 for t in state_map.mapa[y-1])
+            
+            if deadlock4:
+                exists = [l for l in goals if l[1] == y] 
+                if len(exists) != 0:
+                    state_map.set_tile(pos_init, state)
+                    deadlock4 = False
+        
+        state_map.set_tile(pos_init, state)
+        return deadlock1 or deadlock2 or deadlock3 or deadlock4
 
-        return False
-
-    def deadlocks(self, state_map, mapa, pos):
-        deadlock1 = self.cornerCheck(state_map, pos)
-        print("starting deadlock 2")
-        deadlock2 = self.BoxesNextToWall(state_map, pos)
-        print("ending deadlock 2")
-        #deadlock3 = self.BoxNextWallNotGoal(mapa, pos)
-        return deadlock1 or deadlock2
+    def deadlocks(self, state_map, pos_init, pos):
+        deadlock = self.cornerCheck(state_map.mapa, pos)
+        if not deadlock:
+            deadlock = self.BoxesNextToWall(state_map, pos_init, pos)
+        if not deadlock:
+            deadlock = self.BoxNextWallNotGoal(state_map, pos_init, pos)
+        return deadlock
 
     def actions(self, state_map): # valid actions for a given state
         actList = []
@@ -183,27 +231,27 @@ class MyDomain:
         if state_map.mapa[keeper_y][keeper_x + 1] == 0 or state_map.mapa[keeper_y][keeper_x + 1] == 1: # next position is a floor or goal - move
             actList.append('d')
         elif state_map.mapa[keeper_y][keeper_x + 1] == 4 or state_map.mapa[keeper_y][keeper_x + 1] == 5: # next position is a box or box on goal
-            if (state_map.mapa[keeper_y][keeper_x + 2] == 0 and not self.deadlocks(state_map.mapa, state_map, (keeper_x + 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x + 2] == 1:
+            if (state_map.mapa[keeper_y][keeper_x + 2] == 0 and not self.deadlocks(state_map, (keeper_x + 1, keeper_y), (keeper_x + 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x + 2] == 1:
                 actList.append('d') 
             
         if state_map.mapa[keeper_y][keeper_x - 1] == 0 or state_map.mapa[keeper_y][keeper_x - 1] == 1:
             actList.append('a')
         elif state_map.mapa[keeper_y][keeper_x - 1] == 4 or state_map.mapa[keeper_y][keeper_x - 1] == 5:
-            if (state_map.mapa[keeper_y][keeper_x - 2] == 0 and not self.deadlocks(state_map.mapa, state_map, (keeper_x - 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x - 2] == 1:
+            if (state_map.mapa[keeper_y][keeper_x - 2] == 0 and not self.deadlocks(state_map, (keeper_x - 1, keeper_y), (keeper_x - 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x - 2] == 1:
                 actList.append('a')
             
         
         if state_map.mapa[keeper_y + 1][keeper_x] == 0 or state_map.mapa[keeper_y + 1][keeper_x] == 1:
             actList.append('s')
         elif state_map.mapa[keeper_y + 1][keeper_x] == 4 or state_map.mapa[keeper_y + 1][keeper_x] == 5:
-            if (state_map.mapa[keeper_y + 2][keeper_x] == 0 and not self.deadlocks(state_map.mapa, state_map, (keeper_x, keeper_y + 2))) or state_map.mapa[keeper_y + 2][keeper_x] == 1:
+            if (state_map.mapa[keeper_y + 2][keeper_x] == 0 and not self.deadlocks(state_map, (keeper_x, keeper_y + 1), (keeper_x, keeper_y + 2))) or state_map.mapa[keeper_y + 2][keeper_x] == 1:
                 actList.append('s')
             
 
         if state_map.mapa[keeper_y - 1][keeper_x] == 0 or state_map.mapa[keeper_y - 1][keeper_x] == 1:
             actList.append('w')
         elif state_map.mapa[keeper_y - 1][keeper_x] == 4 or state_map.mapa[keeper_y - 1][keeper_x] == 5:
-            if (state_map.mapa[keeper_y - 2][keeper_x] == 0 and not self.deadlocks(state_map.mapa, state_map, (keeper_x, keeper_y - 2))) or state_map.mapa[keeper_y - 2][keeper_x] == 1:
+            if (state_map.mapa[keeper_y - 2][keeper_x] == 0 and not self.deadlocks(state_map, (keeper_x, keeper_y - 1),(keeper_x, keeper_y - 2))) or state_map.mapa[keeper_y - 2][keeper_x] == 1:
                 actList.append('w')
             
         
@@ -350,7 +398,6 @@ class MyTree:
             if self.problem.goal_test(node.state_map):
                 self.solution = node
                 self.terminals = len(self.open_nodes) + 1
-                print(self.get_plan(node))
                 return self.get_plan(node)
             self.non_terminals += 1 # the open node we just popped now has children
             lnewnodes = []

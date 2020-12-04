@@ -18,7 +18,7 @@ async def solver(puzzle, solution):
         win_the_game = await my_tree.search()
         print(win_the_game)
         keys = win_the_game
-        
+
         await solution.put(keys)
 
 
