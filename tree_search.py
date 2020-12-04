@@ -280,8 +280,8 @@ class MyDomain:
         deadlock = self.cornerCheck(state_map.mapa, pos)
         #if not deadlock:
         #    deadlock = self.BoxesNextToWall(state_map, pos_init, pos)
-        if not deadlock:
-            deadlock = self.BoxNextWallNotGoal(state_map, pos_init, pos)
+        #if not deadlock:
+        #    deadlock = self.BoxNextWallNotGoal(state_map, pos_init, pos)
         return deadlock
 
     def actions(self, state_map): # valid actions for a given state
@@ -414,7 +414,6 @@ class MyNode:
             return False
         if self.parent.state_map.mapa == newstate.mapa:
             return True
-        
         return self.parent.in_parent(newstate) 
         
     def __str__(self):
@@ -432,6 +431,7 @@ class MyTree:
         self.problem = problem
         root = MyNode(MyMap(problem.initial), None, 0, 0, None)
         self.open_nodes = [root]
+        self.visited_states = []
         self.solution = None
         self.terminals = 1  #root starts as terminal
         self.non_terminals = 0
@@ -450,6 +450,9 @@ class MyTree:
         plan = self.get_plan(node.parent) # recursively from the root until this node
         plan += [node.action] # getting the list of keys used
         return plan
+
+    def isRepeatedState(self, node):
+        return node.state_map.mapa in self.visited_states
 
     @property
     def plan(self):
@@ -474,10 +477,11 @@ class MyTree:
                 return self.get_plan(node)
             self.non_terminals += 1 # the open node we just popped now has children
             lnewnodes = []
+            self.visited_states += [node.state_map.mapa]
             for key in self.problem.domain.actions(node.state_map): # for each avaliable action on this state
                 newstate = self.problem.domain.result(node.state_map,key)
                 newnode = MyNode(newstate, node, node.depth+1, self.problem.domain.heuristic(newstate), key) # creating child node
-                if not node.in_parent(newstate) and (limit == None or newnode.depth <= limit):
+                if not self.isRepeatedState(newnode):
                     lnewnodes.append(newnode)
             self.open_nodes = sorted(self.open_nodes + lnewnodes, key=lambda node: node.heuristic) 
         return None
