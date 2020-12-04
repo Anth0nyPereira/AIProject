@@ -407,15 +407,7 @@ class MyNode:
         self.depth = depth
         self.heuristic = heuristic
         self.action = action
-            
-    # preventing cycles
-    def in_parent(self, newstate):
-        if self.parent == None:
-            return False
-        if self.parent.state_map.mapa == newstate.mapa:
-            return True
-        return self.parent.in_parent(newstate) 
-        
+    
     def __str__(self):
         return str(self.state_map)
     def __repr__(self):
@@ -433,8 +425,6 @@ class MyTree:
         self.open_nodes = [root]
         self.visited_states = []
         self.solution = None
-        self.terminals = 1  #root starts as terminal
-        self.non_terminals = 0
 
     # get state maps from root to a given node
     def get_path(self,node):
@@ -453,18 +443,6 @@ class MyTree:
 
     def isRepeatedState(self, node):
         return node.state_map.mapa in self.visited_states
-
-    @property
-    def plan(self):
-        return self.get_plan(self.solution) # this is what we want to pass to the server!!
-        
-    @property
-    def length(self):
-            return self.solution.depth # number of steps it takes from root to solution
-               
-    @property # average of expansions ? 
-    def avg_branching(self):
-        return round((self.terminals + self.non_terminals - 1) / self.non_terminals, 2) # 2 decimal figures
         
     # search for solution TODO: put the async here
     async def search(self, limit=None):
@@ -473,9 +451,7 @@ class MyTree:
             node = self.open_nodes.pop(0)
             if self.problem.goal_test(node.state_map):
                 self.solution = node
-                self.terminals = len(self.open_nodes) + 1
                 return self.get_plan(node)
-            self.non_terminals += 1 # the open node we just popped now has children
             lnewnodes = []
             self.visited_states += [node.state_map.mapa]
             for key in self.problem.domain.actions(node.state_map): # for each avaliable action on this state
