@@ -3,6 +3,7 @@ from functools import reduce
 import copy
 import asyncio
 import math
+import bisect
 #-------------------------------------------------------MYMAP------------------------------------------------------------
 from game import logger
 
@@ -379,7 +380,7 @@ class MyDomain:
         min_dist = 1000
         for box in boxes:
             bx, by = box
-            dist = abs(x - bx) + abs(y-by)
+            dist = abs(x - bx) + abs(y-by) + len(state_map.empty_goals)
             min_dist = dist if dist < min_dist else min_dist
 
         return min_dist
@@ -412,6 +413,9 @@ class MyNode:
         return str(self.state_map)
     def __repr__(self):
         return str(self)
+
+    def __lt__(self, other):
+        return self.heuristic < other.heuristic
 
 #------------------------------------------------------------------------------------------------------------------------
 
@@ -459,5 +463,6 @@ class MyTree:
                 newnode = MyNode(newstate, node, node.depth+1, self.problem.domain.heuristic(newstate), key) # creating child node
                 if not self.isRepeatedState(newnode):
                     lnewnodes.append(newnode)
-            self.open_nodes = sorted(self.open_nodes + lnewnodes, key=lambda node: node.heuristic) 
+            for element in lnewnodes:
+                bisect.insort(self.open_nodes, element)
         return None
