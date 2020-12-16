@@ -169,7 +169,6 @@ class MyDomain:
         state = 4 if mapa[y][x] == 4 else 5
 
         state_map.clear_tile(pos_init)
-        goals = state_map.empty_goals
 
         if state_map.mapa[y][x+1] == 8: # right-wall
             lastWall = y
@@ -177,27 +176,27 @@ class MyDomain:
             for line in range(y, len(state_map.mapa)):  #from our line to the end, check if there's a hole in the right wall below our position
                 if state_map.mapa[line][x+1] == 8:
                     lastWall = line
+                    if state_map.mapa[line][x] == 1:    #unless we find a goal in the way
+                        state_map.set_tile(pos_init, state)
+                        print("NOT A DEADLOCK")
+                        return False
+                    if state_map.mapa[line][x] == 8:        # now let's check our way up
+                        for line in range(y, -1, -1):       #from our line to the top, check if there's a hole in the right wall before our position
+                            if state_map.mapa[line][x+1] == 8: 
+                                firstWall = line
+                                if state_map.mapa[line][x] == 1:
+                                    state_map.set_tile(pos_init, state)
+                                    return False 
+                                if state_map.mapa[line][x] == 8:
+                                    state_map.set_tile(pos_init, state)
+                                    print("right-wall " + str(pos))
+                                    return True
+                                else:                           #when we find a hole, we know in which line the wall starts (firstwall)
+                                    break
+                                
                 else:                                   #when we find a hole, we know in which line the wall ends (lastwall)
                     break
-            
-            for line in range(y, lastWall+1):           #we're half blocked if we have a box below us but before the wall opening 
-                if state_map.mapa[line][x] == 1:
-                    state_map.set_tile(pos_init, state)
-                    return False                        #unless we find a goal in the way 
-                if state_map.mapa[line][x] == 8:        # now let's check our way up
-                    for line in range(y, -1, -1):       #from our line to the top, check if there's a hole in the right wall before our position
-                        if state_map.mapa[line][x+1] == 8: 
-                            firstWall = line
-                        else:                           #when we find a hole, we know in which line the wall starts (firstwall)
-                            break
-                    
-                    for line in range(y, firstWall-1, -1):  #now we're fully blocked if we have a box above us but after the wall opening
-                        if state_map.mapa[line][x] == 1:
-                            state_map.set_tile(pos_init, state)
-                            return False                    #unless we find a goal in the way
-                        if state_map.mapa[line][x] == 8:
-                            state_map.set_tile(pos_init, state)
-                            return True
+                        
         
         if state_map.mapa[y][x-1] == 8: # left-wall
             lastWall = y
@@ -205,27 +204,25 @@ class MyDomain:
             for line in range(y, len(state_map.mapa)):  #from our line to the end, check if there's a hole in the left wall below our position
                 if state_map.mapa[line][x-1] == 8:
                     lastWall = line
+                    if state_map.mapa[line][x] == 1:
+                        state_map.set_tile(pos_init, state)
+                        return False 
+                    if state_map.mapa[line][x] == 8:        # now let's check our way up
+                        for line in range(y, -1, -1):       #from our line to the top, check if there's a hole in the right wall before our position
+                            if state_map.mapa[line][x-1] == 8: 
+                                firstWall = line
+                                if state_map.mapa[line][x] == 1:
+                                    state_map.set_tile(pos_init, state)
+                                    return False
+                                if state_map.mapa[line][x] == 8:
+                                    state_map.set_tile(pos_init, state)
+                                    print("left-wall " + str(pos))
+                                    return True
+                                else:                           #when we find a hole, we know in which line the wall starts (firstwall)
+                                    break
                 else:                                   #when we find a hole, we know in which line the wall ends (lastwall)
                     break
-            
-            for line in range(y, lastWall+1):           #we're half blocked if we have a box below us but before the wall opening 
-                if state_map.mapa[line][x] == 1:
-                    state_map.set_tile(pos_init, state)
-                    return False                        #unless we find a goal in the way 
-                if state_map.mapa[line][x] == 8:        # now let's check our way up
-                    for line in range(y, -1, -1):       #from our line to the top, check if there's a hole in the right wall before our position
-                        if state_map.mapa[line][x-1] == 8: 
-                            firstWall = line
-                        else:                           #when we find a hole, we know in which line the wall starts (firstwall)
-                            break
-                    
-                    for line in range(y, firstWall-1, -1):  #now we're fully blocked if we have a box above us but after the wall opening
-                        if state_map.mapa[line][x] == 1:
-                            state_map.set_tile(pos_init, state)
-                            return False                    #unless we find a goal in the way
-                        if state_map.mapa[line][x] == 8:
-                            state_map.set_tile(pos_init, state)
-                            return True
+                        
 
         if state_map.mapa[y+1][x] == 8: # down-wall
             rightWall = x
@@ -233,27 +230,30 @@ class MyDomain:
             for col in range(x, state_map.hor_tiles):  #from our column to the end, check if there's a hole in the down-wall on the right of our position
                 if state_map.mapa[y+1][col] == 8:
                     rightWall = col
+                    if state_map.mapa[y][col] == 1:
+                        state_map.set_tile(pos_init, state)
+                        return False
+                    if state_map.mapa[y][col] == 8:        # now let's check on our left
+                        for col in range(x, -1, -1):       #from our column to the left, check if there's a hole in the down-wall on the left of our position
+                            if state_map.mapa[y+1][col] == 8: 
+                                print("estamos a ver se para a esquerda ha wall " + str((col,y+1)))
+                                leftWall = col
+                                if state_map.mapa[y][col] == 1:
+                                    state_map.set_tile(pos_init, state)
+                                    return False 
+                                if state_map.mapa[y][col] == 8:
+                                    state_map.set_tile(pos_init, state)
+                                    print("down-wall " + str(pos))
+                                    print(rightWall, leftWall)
+                                    return True
+                            else:                           #when we find a hole, we know in which column the wall starts (firstwall)
+                                break
+                        
+
                 else:                                   #when we find a hole, we know in which column the wall ends (rightWall)
                     break
             
-            for col in range(x, rightWall+1):           #we're half blocked if we have a box on our right but before the wall opening 
-                if state_map.mapa[y][col] == 1:
-                    state_map.set_tile(pos_init, state)
-                    return False                        #unless we find a goal in the way 
-                if state_map.mapa[y][col] == 8:        # now let's check on our left
-                    for col in range(x, -1, -1):       #from our column to the left, check if there's a hole in the down-wall on the left of our position
-                        if state_map.mapa[y+1][col] == 8: 
-                            leftWall = col
-                        else:                           #when we find a hole, we know in which column the wall starts (firstwall)
-                            break
-                    
-                    for col in range(y, leftWall-1, -1):  #now we're fully blocked if we have a box on our left but after the wall opening
-                        if state_map.mapa[y][col] == 1:
-                            state_map.set_tile(pos_init, state)
-                            return False                    #unless we find a goal in the way
-                        if state_map.mapa[y][col] == 8:
-                            state_map.set_tile(pos_init, state)
-                            return True
+            
 
         if state_map.mapa[y-1][x] == 8: # up-wall
             rightWall = x
@@ -261,27 +261,26 @@ class MyDomain:
             for col in range(x, state_map.hor_tiles):  #from our column to the end, check if there's a hole in the up-wall on the right of our position
                 if state_map.mapa[y-1][col] == 8:
                     rightWall = col
+                    if state_map.mapa[y][col] == 1:
+                        state_map.set_tile(pos_init, state)
+                        return False 
+                    if state_map.mapa[y][col] == 8:        # now let's check on our left
+                        for col in range(x, -1, -1):       #from our column to the left, check if there's a hole in the up-wall on the left of our position
+                            if state_map.mapa[y-1][col] == 8: 
+                                leftWall = col
+                                if state_map.mapa[y][col] == 1:
+                                    state_map.set_tile(pos_init, state)
+                                    return False 
+                                if state_map.mapa[y][col] == 8:
+                                    state_map.set_tile(pos_init, state)
+                                    print("up-wall " + str(pos))
+                                    print(rightWall, leftWall)
+                                    return True
+                            else:                           #when we find a hole, we know in which column the wall starts (firstwall)
+                                break
+
                 else:                                   #when we find a hole, we know in which column the wall ends (rightWall)
                     break
-            
-            for col in range(x, rightWall+1):           #we're half blocked if we have a box on our right but before the wall opening 
-                if state_map.mapa[y][col] == 1:
-                    state_map.set_tile(pos_init, state)
-                    return False                        #unless we find a goal in the way 
-                if state_map.mapa[y][col] == 8:        # now let's check on our left
-                    for col in range(x, -1, -1):       #from our column to the left, check if there's a hole in the up-wall on the left of our position
-                        if state_map.mapa[y-1][col] == 8: 
-                            leftWall = col
-                        else:                           #when we find a hole, we know in which column the wall starts (firstwall)
-                            break
-                    
-                    for col in range(y, leftWall-1, -1):  #now we're fully blocked if we have a box on our left but after the wall opening
-                        if state_map.mapa[y][col] == 1:
-                            state_map.set_tile(pos_init, state)
-                            return False                    #unless we find a goal in the way
-                        if state_map.mapa[y][col] == 8:
-                            state_map.set_tile(pos_init, state)
-                            return True
         state_map.set_tile(pos_init, state)
         return False
 
