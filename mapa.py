@@ -132,6 +132,7 @@ class Map:
         self._map[y][x] = self._map[y][x] & 0b1  # lesser bit carries ON_GOAL
 
     def is_blocked(self, pos):
+        print("fui chamada a rececao!")
         """Determine if mobile entity can be placed at pos."""
         x, y = pos
         if x not in range(self.hor_tiles) or y not in range(self.ver_tiles):

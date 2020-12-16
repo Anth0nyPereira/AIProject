@@ -126,27 +126,35 @@ class MyDomain:
         state_map.clear_tile(pos_init)
         
         if mapa[y][x+1] in [4,5] and (mapa[y+1][x] == 8 and mapa[y+1][x+1] == 8):
+            print("ha uma caixa a direita e wall em baixo" + " " + str(pos)) 
             state_map.set_tile(pos_init, state)
             return True
         elif mapa[y][x-1] in [4,5] and (mapa[y+1][x] == 8 and mapa[y+1][x-1] == 8):
+            print("ha uma caixa a esquerda e wall em baixo" + " " + str(pos)) 
             state_map.set_tile(pos_init, state)
             return True
         elif mapa[y][x+1] in [4,5] and (mapa[y-1][x] == 8 and mapa[y-1][x+1] == 8):
+            print("ha uma caixa a direita e wall em cima" + " " + str(pos)) 
             state_map.set_tile(pos_init, state)
             return True
         elif mapa[y][x-1] in [4,5] and (mapa[y-1][x] == 8 and mapa[y-1][x-1] == 8):
+            print("ha uma caixa a esquerda e wall em cima" + " " + str(pos)) 
             state_map.set_tile(pos_init, state)
             return True
         elif mapa[y+1][x] in [4,5] and (mapa[y][x-1] == 8 and mapa[y+1][x-1] == 8):
+            print("ha uma caixa em baixo e wall à esquerda" + " " + str(pos))
             state_map.set_tile(pos_init, state)
             return True
         elif mapa[y-1][x] in [4,5] and (mapa[y][x-1] == 8 and mapa[y-1][x-1] == 8):
+            print("ha uma caixa em cima e wall à esquerda" + " " + str(pos))
             state_map.set_tile(pos_init, state)
             return True
         elif mapa[y+1][x] in [4,5] and (mapa[y][x+1] == 8 and mapa[y+1][x+1] == 8):
+            print("ha uma caixa em baixo e wall à direita" + " " + str(pos))
             state_map.set_tile(pos_init, state)
             return True
         elif mapa[y-1][x] in [4,5] and (mapa[y][x+1] == 8 and mapa[y-1][x+1] == 8):
+            print("ha uma caixa em cima e wall à direita" + " " + str(pos))
             state_map.set_tile(pos_init, state)
             return True
         state_map.set_tile(pos_init, state)
@@ -280,9 +288,9 @@ class MyDomain:
     def deadlocks(self, state_map, pos_init, pos):
         deadlock = self.cornerCheck(state_map.mapa, pos)
         #if not deadlock:
-        #    deadlock = self.BoxesNextToWall(state_map, pos_init, pos)
-        #if not deadlock:
-        #    deadlock = self.BoxNextWallNotGoal(state_map, pos_init, pos)
+            #deadlock = self.BoxesNextToWall(state_map, pos_init, pos)
+        if not deadlock:
+            deadlock = self.BoxNextWallNotGoal(state_map, pos_init, pos)
         return deadlock
 
     def actions(self, state_map): # valid actions for a given state
@@ -427,7 +435,7 @@ class MyTree:
         self.problem = problem
         root = MyNode(MyMap(problem.initial), None, 0, 0, None)
         self.open_nodes = [root]
-        self.visited_states = []
+        self.visited_states = {}
         self.solution = None
 
     # get state maps from root to a given node
@@ -446,7 +454,12 @@ class MyTree:
         return plan
 
     def isRepeatedState(self, node):
-        return node.state_map.mapa in self.visited_states
+        if node.state_map.keeper not in self.visited_states:
+            return False
+        for box_list in self.visited_states[node.state_map.keeper]:
+            if box_list == node.state_map.boxes:
+                return True
+        return False
         
     # search for solution TODO: put the async here
     async def search(self, limit=None):
@@ -457,7 +470,10 @@ class MyTree:
                 self.solution = node
                 return self.get_plan(node)
             lnewnodes = []
-            self.visited_states += [node.state_map.mapa]
+            if node.state_map.keeper not in self.visited_states.keys():
+                self.visited_states[node.state_map.keeper] =  [node.state_map.boxes]
+            else:
+                 self.visited_states[node.state_map.keeper].append(node.state_map.boxes)
             for key in self.problem.domain.actions(node.state_map): # for each avaliable action on this state
                 newstate = self.problem.domain.result(node.state_map,key)
                 newnode = MyNode(newstate, node, node.depth+1, self.problem.domain.heuristic(newstate), key) # creating child node
