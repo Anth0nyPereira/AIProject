@@ -4,6 +4,7 @@ import copy
 import asyncio
 import math
 import bisect
+import time
 #-------------------------------------------------------MYMAP------------------------------------------------------------
 from game import logger
 
@@ -315,35 +316,35 @@ class MyDomain:
         # TODO: add cornercheck and blockedcheck
         a_direita_keeper = state_map.mapa[keeper_y][keeper_x + 1]
         if a_direita_keeper == 0 or a_direita_keeper == 1: # next position is a floor or goal - move
-            actList.append('d')
+            actList += ['d']
         elif a_direita_keeper == 4 or a_direita_keeper == 5: # next position is a box or box on goal
             a_direita_caixa = state_map.mapa[keeper_y][keeper_x + 2]
             if a_direita_caixa == 1 or (a_direita_caixa == 0 and not self.deadlocks(state_map, (keeper_x + 1, keeper_y), (keeper_x + 2, keeper_y))):
-                actList.append('d') 
+                actList += ['d']
         
         a_esquerda_keeper = state_map.mapa[keeper_y][keeper_x - 1]
         if a_esquerda_keeper == 0 or a_esquerda_keeper == 1:
-            actList.append('a')
+            actList += ['a']
         elif a_esquerda_keeper == 4 or a_esquerda_keeper == 5:
             a_esquerda_caixa = state_map.mapa[keeper_y][keeper_x - 2]
             if a_esquerda_caixa == 1 or (a_esquerda_caixa == 0 and not self.deadlocks(state_map, (keeper_x - 1, keeper_y), (keeper_x - 2, keeper_y))):
-                actList.append('a')
+                actList += ['a']
             
         em_baixo_keeper = state_map.mapa[keeper_y + 1][keeper_x]
         if em_baixo_keeper == 0 or em_baixo_keeper == 1:
-            actList.append('s')
+            actList += ['s']
         elif em_baixo_keeper == 4 or em_baixo_keeper == 5:
             em_baixo_caixa = state_map.mapa[keeper_y + 2][keeper_x]
             if em_baixo_caixa == 1 or (em_baixo_caixa == 0 and not self.deadlocks(state_map, (keeper_x, keeper_y + 1), (keeper_x, keeper_y + 2))):
-                actList.append('s')
+                actList += ['s']
             
         em_cima_keeper = state_map.mapa[keeper_y - 1][keeper_x]
         if em_cima_keeper == 0 or em_cima_keeper == 1:
-            actList.append('w')
+            actList += ['w']
         elif em_cima_keeper == 4 or em_cima_keeper == 5:
             em_cima_caixa = state_map.mapa[keeper_y - 2][keeper_x]
             if em_cima_caixa == 1 or (em_cima_caixa == 0 and not self.deadlocks(state_map, (keeper_x, keeper_y - 1),(keeper_x, keeper_y - 2))):
-                actList.append('w')
+                actList += ['w']
             
         return actList 
     
@@ -352,9 +353,13 @@ class MyDomain:
         x, y = new_map.keeper
 
         if action == 'd':
-            if new_map.mapa[y][x+1] == 4 or new_map.mapa[y][x+1] == 5:
+            if new_map.mapa[y][x+1] in [4,5]:
                 new_map.clear_tile((x+1, y))
-                new_map.set_tile((x+2, y), 4)
+                a_direita_caixa = new_map.mapa[y][x+2]
+                if a_direita_caixa == 0:
+                    new_map.set_tile((x+2, y), 4)
+                elif a_direita_caixa == 1:
+                    new_map.set_tile((x+2, y), 5)
 
             new_map.clear_tile((x,y))
             new_map.set_tile((x+1, y), 2)
@@ -363,9 +368,10 @@ class MyDomain:
         if action == 'a':
             if new_map.mapa[y][x-1] in [4,5]:
                 new_map.clear_tile((x-1, y))
-                if new_map.mapa[y][x-2] == 0:
+                a_esquerda_caixa = new_map.mapa[y][x-2]
+                if a_esquerda_caixa == 0:
                     new_map.set_tile((x-2, y), 4)
-                elif new_map.mapa[y][x-2] == 1:
+                elif a_esquerda_caixa == 1:
                     new_map.set_tile((x - 2, y), 5)
 
             new_map.clear_tile((x,y))
@@ -374,9 +380,10 @@ class MyDomain:
         if action == 's':
             if new_map.mapa[y + 1][x] in [4,5]:
                 new_map.clear_tile((x, y + 1))
-                if new_map.mapa[y + 2][x] == 0:
+                em_baixo_caixa = new_map.mapa[y + 2][x]
+                if em_baixo_caixa == 0:
                     new_map.set_tile((x, y + 2), 4)
-                elif new_map.mapa[y+2][x] == 1:
+                elif em_baixo_caixa == 1:
                     new_map.set_tile((x, y + 2), 5)
 
 
@@ -386,9 +393,10 @@ class MyDomain:
         if action == 'w':
             if new_map.mapa[y-1][x] in [4,5]:
                 new_map.clear_tile((x, y-1))
-                if new_map.mapa[y-2][x] == 0:
+                em_cima_caixa = new_map.mapa[y-2][x]
+                if em_cima_caixa == 0:
                     new_map.set_tile((x, y-2), 4)
-                elif new_map.mapa[y-2][x] == 1:
+                elif em_cima_caixa == 1:
                     new_map.set_tile((x, y - 2), 5)
                 
             new_map.clear_tile((x,y))
@@ -402,11 +410,8 @@ class MyDomain:
     def heuristic(self, state_map):
         x,y = state_map.keeper
         boxes = state_map.boxes
-        min_dist = 1000
-        for box in boxes:
-            bx, by = box
-            dist = abs(x - bx) + abs(y-by) + len(state_map.empty_goals)
-            min_dist = dist if dist < min_dist else min_dist
+        empty_goals = state_map.empty_goals
+        min_dist = min([abs(x - bx) + abs(y-by) + len(empty_goals) for bx, by in boxes])
 
         return min_dist
     
@@ -455,14 +460,6 @@ class MyTree:
         self.visited_states = {}
         self.solution = None
 
-    # get state maps from root to a given node
-    def get_path(self,node):
-        if node.parent == None:
-            return [node.state_map.mapa]
-        path = self.get_path(node.parent)
-        path += [node.state_map.mapa]
-        return path
-
     def get_plan(self, node):
         if node.parent == None:
             return []
@@ -473,10 +470,8 @@ class MyTree:
     def isRepeatedState(self, node):
         if node.state_map.keeper not in self.visited_states:
             return False
-        for box_list in self.visited_states[node.state_map.keeper]:
-            if box_list == node.state_map.boxes:
-                return True
-        return False
+        return node.state_map.boxes in self.visited_states[node.state_map.keeper]
+
         
     # search for solution TODO: put the async here
     async def search(self, limit=None):
@@ -488,14 +483,14 @@ class MyTree:
                 return self.get_plan(node)
             lnewnodes = []
             if node.state_map.keeper not in self.visited_states.keys():
-                self.visited_states[node.state_map.keeper] =  [node.state_map.boxes]
+                self.visited_states[node.state_map.keeper] = [node.state_map.boxes]
             else:
-                 self.visited_states[node.state_map.keeper].append(node.state_map.boxes)
+                 self.visited_states[node.state_map.keeper] += [node.state_map.boxes]
             for key in self.problem.domain.actions(node.state_map): # for each avaliable action on this state
                 newstate = self.problem.domain.result(node.state_map,key)
                 newnode = MyNode(newstate, node, node.depth+1, self.problem.domain.heuristic(newstate), key) # creating child node
                 if not self.isRepeatedState(newnode):
-                    lnewnodes.append(newnode)
+                    lnewnodes += [newnode]
             for element in lnewnodes:
                 bisect.insort(self.open_nodes, element)
         return None
