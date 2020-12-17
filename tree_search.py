@@ -104,37 +104,38 @@ class MyDomain:
         a_direita = mapa[y][x+1]
         em_baixo = mapa[y+1][x]
         direita_baixo = mapa[y+1][x+1]
+        set_4_5 = set([4,5])
         
-        if a_direita in [4,5] and (em_baixo == 8 and direita_baixo == 8):
+        if a_direita in set_4_5 and (em_baixo == 8 and direita_baixo == 8):
             state_map.set_tile(pos_init, state)
             return True
         else:
             a_esquerda = mapa[y][x-1]
             esquerda_baixo = mapa[y+1][x-1]
-        if a_esquerda in [4,5] and (em_baixo == 8 and esquerda_baixo == 8):
+        if a_esquerda in set_4_5 and (em_baixo == 8 and esquerda_baixo == 8):
             state_map.set_tile(pos_init, state)
             return True
         else:
             em_cima =  mapa[y-1][x]
             direita_cima = mapa[y-1][x+1]
-        if a_direita in [4,5] and (em_cima == 8 and direita_cima == 8):
+        if a_direita in set_4_5 and (em_cima == 8 and direita_cima == 8):
             state_map.set_tile(pos_init, state)
             return True
         else:
             esquerda_cima = mapa[y-1][x-1]
-        if a_esquerda in [4,5] and (em_cima == 8 and esquerda_cima == 8):
+        if a_esquerda in set_4_5 and (em_cima == 8 and esquerda_cima == 8):
             state_map.set_tile(pos_init, state)
             return True
-        if em_baixo in [4,5] and (a_esquerda == 8 and esquerda_baixo == 8):
+        if em_baixo in set_4_5 and (a_esquerda == 8 and esquerda_baixo == 8):
             state_map.set_tile(pos_init, state)
             return True
-        if em_cima in [4,5] and (a_esquerda == 8 and esquerda_cima == 8):
+        if em_cima in set_4_5 and (a_esquerda == 8 and esquerda_cima == 8):
             state_map.set_tile(pos_init, state)
             return True
-        if em_baixo in [4,5] and (a_direita == 8 and direita_baixo == 8):
+        if em_baixo in set_4_5 and (a_direita == 8 and direita_baixo == 8):
             state_map.set_tile(pos_init, state)
             return True
-        if em_cima in [4,5] and (a_direita == 8 and direita_cima == 8):
+        if em_cima in set_4_5 and (a_direita == 8 and direita_cima == 8):
             state_map.set_tile(pos_init, state)
             return True
         state_map.set_tile(pos_init, state)
@@ -158,7 +159,8 @@ class MyDomain:
                 if mapa[line][x+1] == 8:
                     lastWall = line
                     our_col = mapa[line][x]
-                    if our_col in [1,3]:    #unless we find a goal in the way
+                    set_1_3 = set([1,3])
+                    if our_col in set_1_3:    #unless we find a goal in the way
                         state_map.set_tile(pos_init, state)
                         return False
                     if our_col == 8:        # now let's check our way up
@@ -166,7 +168,7 @@ class MyDomain:
                             if mapa[line][x+1] == 8: 
                                 firstWall = line
                                 our_col = mapa[line][x]
-                                if our_col in [1,3]:
+                                if our_col in set_1_3:
                                     state_map.set_tile(pos_init, state)
                                     return False 
                                 if our_col == 8:
@@ -186,7 +188,8 @@ class MyDomain:
                 if mapa[line][x-1] == 8:
                     lastWall = line
                     our_col = mapa[line][x]
-                    if our_col in [1,3]:
+                    set_1_3 = set([1,3])
+                    if our_col in set_1_3:
                         state_map.set_tile(pos_init, state)
                         return False 
                     if our_col == 8:        # now let's check our way up
@@ -194,7 +197,7 @@ class MyDomain:
                             if mapa[line][x-1] == 8: 
                                 firstWall = line
                                 our_col = mapa[line][x]
-                                if our_col in [1,3]:
+                                if our_col in set_1_3:
                                     state_map.set_tile(pos_init, state)
                                     return False
                                 if our_col == 8:
@@ -213,7 +216,8 @@ class MyDomain:
                 if mapa[y+1][col] == 8:
                     rightWall = col
                     our_col = mapa[y][col]
-                    if our_col in [1,3]:
+                    set_1_3 = set([1,3])
+                    if our_col in set_1_3:
                         state_map.set_tile(pos_init, state)
                         return False
                     if our_col == 8:        # now let's check on our left
@@ -221,7 +225,7 @@ class MyDomain:
                             if mapa[y+1][col] == 8: 
                                 leftWall = col
                                 our_col = mapa[y][col]
-                                if our_col in [1,3]:
+                                if our_col in set_1_3:
                                     state_map.set_tile(pos_init, state)
                                     return False 
                                 if our_col == 8:
@@ -242,7 +246,8 @@ class MyDomain:
                 if mapa[y-1][col1] == 8:
                     rightWall = col1
                     our_col1 = mapa[y][col1]
-                    if our_col1 in [1,3]:
+                    set_1_3 = set([1,3])
+                    if our_col1 in set_1_3:
                         state_map.set_tile(pos_init, state)
                         return False 
                     if our_col1 == 8:        # now let's check on our left
@@ -250,7 +255,7 @@ class MyDomain:
                             if mapa[y-1][col] == 8: 
                                 leftWall = col
                                 our_col = mapa[y][col]
-                                if our_col in [1,3]:
+                                if our_col in set_1_3:
                                     state_map.set_tile(pos_init, state)
                                     return False 
                                 if our_col == 8:
@@ -318,9 +323,10 @@ class MyDomain:
         new_map = MyMap(copy.deepcopy(state_map.mapa))
         x, y = new_map.keeper
         mapa = new_map.mapa
+        set_4_5 = set([4,5])
 
         if action == 'd':
-            if mapa[y][x+1] in [4,5]:
+            if mapa[y][x+1] in set_4_5:
                 new_map.clear_tile((x+1, y))
                 a_direita_caixa = mapa[y][x+2]
                 if a_direita_caixa == 0:
@@ -333,7 +339,7 @@ class MyDomain:
 
 
         if action == 'a':
-            if mapa[y][x-1] in [4,5]:
+            if mapa[y][x-1] in set_4_5:
                 new_map.clear_tile((x-1, y))
                 a_esquerda_caixa = mapa[y][x-2]
                 if a_esquerda_caixa == 0:
@@ -345,7 +351,7 @@ class MyDomain:
             new_map.set_tile((x-1, y), 2)
         
         if action == 's':
-            if mapa[y + 1][x] in [4,5]:
+            if mapa[y + 1][x] in set_4_5:
                 new_map.clear_tile((x, y + 1))
                 em_baixo_caixa = mapa[y + 2][x]
                 if em_baixo_caixa == 0:
@@ -358,7 +364,7 @@ class MyDomain:
             new_map.set_tile((x, y+1), 2)
 
         if action == 'w':
-            if mapa[y-1][x] in [4,5]:
+            if mapa[y-1][x] in set_4_5:
                 new_map.clear_tile((x, y-1))
                 em_cima_caixa = mapa[y-2][x]
                 if em_cima_caixa == 0:
