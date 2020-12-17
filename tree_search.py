@@ -313,33 +313,38 @@ class MyDomain:
         # for each direction, if the next tile is "empty", the action is valid
         # if the next tile has a box, then the action is only valid if the other next tile is "empty" and not a corner
         # TODO: add cornercheck and blockedcheck
-        if state_map.mapa[keeper_y][keeper_x + 1] == 0 or state_map.mapa[keeper_y][keeper_x + 1] == 1: # next position is a floor or goal - move
+        a_direita_keeper = state_map.mapa[keeper_y][keeper_x + 1]
+        if a_direita_keeper == 0 or a_direita_keeper == 1: # next position is a floor or goal - move
             actList.append('d')
-        elif state_map.mapa[keeper_y][keeper_x + 1] == 4 or state_map.mapa[keeper_y][keeper_x + 1] == 5: # next position is a box or box on goal
-            if (state_map.mapa[keeper_y][keeper_x + 2] == 0 and not self.deadlocks(state_map, (keeper_x + 1, keeper_y), (keeper_x + 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x + 2] == 1:
+        elif a_direita_keeper == 4 or a_direita_keeper == 5: # next position is a box or box on goal
+            a_direita_caixa = state_map.mapa[keeper_y][keeper_x + 2]
+            if a_direita_caixa == 1 or (a_direita_caixa == 0 and not self.deadlocks(state_map, (keeper_x + 1, keeper_y), (keeper_x + 2, keeper_y))):
                 actList.append('d') 
-            
-        if state_map.mapa[keeper_y][keeper_x - 1] == 0 or state_map.mapa[keeper_y][keeper_x - 1] == 1:
+        
+        a_esquerda_keeper = state_map.mapa[keeper_y][keeper_x - 1]
+        if a_esquerda_keeper == 0 or a_esquerda_keeper == 1:
             actList.append('a')
-        elif state_map.mapa[keeper_y][keeper_x - 1] == 4 or state_map.mapa[keeper_y][keeper_x - 1] == 5:
-            if (state_map.mapa[keeper_y][keeper_x - 2] == 0 and not self.deadlocks(state_map, (keeper_x - 1, keeper_y), (keeper_x - 2, keeper_y))) or state_map.mapa[keeper_y][keeper_x - 2] == 1:
+        elif a_esquerda_keeper == 4 or a_esquerda_keeper == 5:
+            a_esquerda_caixa = state_map.mapa[keeper_y][keeper_x - 2]
+            if a_esquerda_caixa == 1 or (a_esquerda_caixa == 0 and not self.deadlocks(state_map, (keeper_x - 1, keeper_y), (keeper_x - 2, keeper_y))):
                 actList.append('a')
             
-        
-        if state_map.mapa[keeper_y + 1][keeper_x] == 0 or state_map.mapa[keeper_y + 1][keeper_x] == 1:
+        em_baixo_keeper = state_map.mapa[keeper_y + 1][keeper_x]
+        if em_baixo_keeper == 0 or em_baixo_keeper == 1:
             actList.append('s')
-        elif state_map.mapa[keeper_y + 1][keeper_x] == 4 or state_map.mapa[keeper_y + 1][keeper_x] == 5:
-            if (state_map.mapa[keeper_y + 2][keeper_x] == 0 and not self.deadlocks(state_map, (keeper_x, keeper_y + 1), (keeper_x, keeper_y + 2))) or state_map.mapa[keeper_y + 2][keeper_x] == 1:
+        elif em_baixo_keeper == 4 or em_baixo_keeper == 5:
+            em_baixo_caixa = state_map.mapa[keeper_y + 2][keeper_x]
+            if em_baixo_caixa == 1 or (em_baixo_caixa == 0 and not self.deadlocks(state_map, (keeper_x, keeper_y + 1), (keeper_x, keeper_y + 2))):
                 actList.append('s')
             
-
-        if state_map.mapa[keeper_y - 1][keeper_x] == 0 or state_map.mapa[keeper_y - 1][keeper_x] == 1:
+        em_cima_keeper = state_map.mapa[keeper_y - 1][keeper_x]
+        if em_cima_keeper == 0 or em_cima_keeper == 1:
             actList.append('w')
-        elif state_map.mapa[keeper_y - 1][keeper_x] == 4 or state_map.mapa[keeper_y - 1][keeper_x] == 5:
-            if (state_map.mapa[keeper_y - 2][keeper_x] == 0 and not self.deadlocks(state_map, (keeper_x, keeper_y - 1),(keeper_x, keeper_y - 2))) or state_map.mapa[keeper_y - 2][keeper_x] == 1:
+        elif em_cima_keeper == 4 or em_cima_keeper == 5:
+            em_cima_caixa = state_map.mapa[keeper_y - 2][keeper_x]
+            if em_cima_caixa == 1 or (em_cima_caixa == 0 and not self.deadlocks(state_map, (keeper_x, keeper_y - 1),(keeper_x, keeper_y - 2))):
                 actList.append('w')
             
-        
         return actList 
     
     def result(self,state_map,action): # result of an action in a given state (aka next state given an action)
