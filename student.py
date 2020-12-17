@@ -16,6 +16,7 @@ async def solver(puzzle, solution):
         my_prob = MyProblem(my_dom)
         my_tree = MyTree(my_prob)
         win_the_game = await my_tree.search()
+        print(win_the_game)
         keys = win_the_game
 
         await solution.put(keys)

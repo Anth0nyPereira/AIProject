@@ -185,22 +185,22 @@ class MyDomain:
 
         state_map.clear_tile(pos_init)
 
-        if state_map.mapa[y][x+1] == 8: # right-wall
+        if mapa[y][x+1] == 8: # right-wall
             lastWall = y
             firstWall = y
-            for line in range(y, len(state_map.mapa)):  #from our line to the end, check if there's a hole in the right wall below our position
-                if state_map.mapa[line][x+1] == 8:
+            for line in range(y, len(mapa)):  #from our line to the end, check if there's a hole in the right wall below our position
+                if mapa[line][x+1] == 8:
                     lastWall = line
-                    our_col = state_map.mapa[line][x]
-                    if our_col == 1:    #unless we find a goal in the way
+                    our_col = mapa[line][x]
+                    if our_col in [1,3]:    #unless we find a goal in the way
                         state_map.set_tile(pos_init, state)
                         return False
                     if our_col == 8:        # now let's check our way up
                         for line in range(y, -1, -1):       #from our line to the top, check if there's a hole in the right wall before our position
-                            if state_map.mapa[line][x+1] == 8: 
+                            if mapa[line][x+1] == 8: 
                                 firstWall = line
-                                our_col = state_map.mapa[line][x]
-                                if our_col == 1:
+                                our_col = mapa[line][x]
+                                if our_col in [1,3]:
                                     state_map.set_tile(pos_init, state)
                                     return False 
                                 if our_col == 8:
@@ -213,22 +213,22 @@ class MyDomain:
                     break
                         
         
-        if state_map.mapa[y][x-1] == 8: # left-wall
+        if mapa[y][x-1] == 8: # left-wall
             lastWall = y
             firstWall = y
-            for line in range(y, len(state_map.mapa)):  #from our line to the end, check if there's a hole in the left wall below our position
-                if state_map.mapa[line][x-1] == 8:
+            for line in range(y, len(mapa)):  #from our line to the end, check if there's a hole in the left wall below our position
+                if mapa[line][x-1] == 8:
                     lastWall = line
-                    our_col = state_map.mapa[line][x]
-                    if our_col == 1:
+                    our_col = mapa[line][x]
+                    if our_col in [1,3]:
                         state_map.set_tile(pos_init, state)
                         return False 
                     if our_col == 8:        # now let's check our way up
                         for line in range(y, -1, -1):       #from our line to the top, check if there's a hole in the right wall before our position
-                            if state_map.mapa[line][x-1] == 8: 
+                            if mapa[line][x-1] == 8: 
                                 firstWall = line
-                                our_col = state_map.mapa[line][x]
-                                if our_col == 1:
+                                our_col = mapa[line][x]
+                                if our_col in [1,3]:
                                     state_map.set_tile(pos_init, state)
                                     return False
                                 if our_col == 8:
@@ -240,22 +240,22 @@ class MyDomain:
                     break
                         
 
-        if state_map.mapa[y+1][x] == 8: # down-wall
+        if mapa[y+1][x] == 8: # down-wall
             rightWall = x
             leftWall = x
             for col in range(x, state_map.hor_tiles):  #from our column to the end, check if there's a hole in the down-wall on the right of our position
-                if state_map.mapa[y+1][col] == 8:
+                if mapa[y+1][col] == 8:
                     rightWall = col
-                    our_col = state_map.mapa[y][col]
-                    if our_col == 1:
+                    our_col = mapa[y][col]
+                    if our_col in [1,3]:
                         state_map.set_tile(pos_init, state)
                         return False
                     if our_col == 8:        # now let's check on our left
                         for col in range(x, -1, -1):       #from our column to the left, check if there's a hole in the down-wall on the left of our position
-                            if state_map.mapa[y+1][col] == 8: 
+                            if mapa[y+1][col] == 8: 
                                 leftWall = col
-                                our_col = state_map.mapa[y][col]
-                                if our_col == 1:
+                                our_col = mapa[y][col]
+                                if our_col in [1,3]:
                                     state_map.set_tile(pos_init, state)
                                     return False 
                                 if our_col == 8:
@@ -269,22 +269,22 @@ class MyDomain:
                     break
             
             
-        if state_map.mapa[y-1][x] == 8: # up-wall
+        if mapa[y-1][x] == 8: # up-wall
             rightWall = x
             leftWall = x
-            for col in range(x, state_map.hor_tiles):  #from our column to the end, check if there's a hole in the up-wall on the right of our position
-                if state_map.mapa[y-1][col] == 8:
-                    rightWall = col
-                    our_col = state_map.mapa[y][col]
-                    if our_col == 1:
+            for col1 in range(x, state_map.hor_tiles):  #from our column to the end, check if there's a hole in the up-wall on the right of our position
+                if mapa[y-1][col1] == 8:
+                    rightWall = col1
+                    our_col1 = mapa[y][col1]
+                    if our_col1 in [1,3]:
                         state_map.set_tile(pos_init, state)
                         return False 
-                    if our_col == 8:        # now let's check on our left
+                    if our_col1 == 8:        # now let's check on our left
                         for col in range(x, -1, -1):       #from our column to the left, check if there's a hole in the up-wall on the left of our position
-                            if state_map.mapa[y-1][col] == 8: 
+                            if mapa[y-1][col] == 8: 
                                 leftWall = col
-                                our_col = state_map.mapa[y][col]
-                                if our_col == 1:
+                                our_col = mapa[y][col]
+                                if our_col in [1,3]:
                                     state_map.set_tile(pos_init, state)
                                     return False 
                                 if our_col == 8:
@@ -307,55 +307,56 @@ class MyDomain:
         return deadlock
 
     def actions(self, state_map): # valid actions for a given state
-        actList = []
+        actList = set()
 
         keeper_x, keeper_y = state_map.keeper
+        mapa = state_map.mapa
 
         # for each direction, if the next tile is "empty", the action is valid
         # if the next tile has a box, then the action is only valid if the other next tile is "empty" and not a corner
-        # TODO: add cornercheck and blockedcheck
-        a_direita_keeper = state_map.mapa[keeper_y][keeper_x + 1]
+        a_direita_keeper = mapa[keeper_y][keeper_x + 1]
         if a_direita_keeper == 0 or a_direita_keeper == 1: # next position is a floor or goal - move
-            actList += ['d']
+            actList = actList | {'d'}
         elif a_direita_keeper == 4 or a_direita_keeper == 5: # next position is a box or box on goal
-            a_direita_caixa = state_map.mapa[keeper_y][keeper_x + 2]
+            a_direita_caixa = mapa[keeper_y][keeper_x + 2]
             if a_direita_caixa == 1 or (a_direita_caixa == 0 and not self.deadlocks(state_map, (keeper_x + 1, keeper_y), (keeper_x + 2, keeper_y))):
-                actList += ['d']
+                actList = actList | {'d'}
         
-        a_esquerda_keeper = state_map.mapa[keeper_y][keeper_x - 1]
+        a_esquerda_keeper = mapa[keeper_y][keeper_x - 1]
         if a_esquerda_keeper == 0 or a_esquerda_keeper == 1:
-            actList += ['a']
+            actList = actList | {'a'}
         elif a_esquerda_keeper == 4 or a_esquerda_keeper == 5:
-            a_esquerda_caixa = state_map.mapa[keeper_y][keeper_x - 2]
+            a_esquerda_caixa = mapa[keeper_y][keeper_x - 2]
             if a_esquerda_caixa == 1 or (a_esquerda_caixa == 0 and not self.deadlocks(state_map, (keeper_x - 1, keeper_y), (keeper_x - 2, keeper_y))):
-                actList += ['a']
+                actList = actList | {'a'}
             
-        em_baixo_keeper = state_map.mapa[keeper_y + 1][keeper_x]
+        em_baixo_keeper = mapa[keeper_y + 1][keeper_x]
         if em_baixo_keeper == 0 or em_baixo_keeper == 1:
-            actList += ['s']
+            actList = actList | {'s'}
         elif em_baixo_keeper == 4 or em_baixo_keeper == 5:
-            em_baixo_caixa = state_map.mapa[keeper_y + 2][keeper_x]
+            em_baixo_caixa = mapa[keeper_y + 2][keeper_x]
             if em_baixo_caixa == 1 or (em_baixo_caixa == 0 and not self.deadlocks(state_map, (keeper_x, keeper_y + 1), (keeper_x, keeper_y + 2))):
-                actList += ['s']
+                actList = actList | {'s'}
             
-        em_cima_keeper = state_map.mapa[keeper_y - 1][keeper_x]
+        em_cima_keeper = mapa[keeper_y - 1][keeper_x]
         if em_cima_keeper == 0 or em_cima_keeper == 1:
-            actList += ['w']
+            actList = actList | {'w'}
         elif em_cima_keeper == 4 or em_cima_keeper == 5:
-            em_cima_caixa = state_map.mapa[keeper_y - 2][keeper_x]
+            em_cima_caixa = mapa[keeper_y - 2][keeper_x]
             if em_cima_caixa == 1 or (em_cima_caixa == 0 and not self.deadlocks(state_map, (keeper_x, keeper_y - 1),(keeper_x, keeper_y - 2))):
-                actList += ['w']
+                actList = actList | {'w'}
             
         return actList 
     
     def result(self,state_map,action): # result of an action in a given state (aka next state given an action)
         new_map = MyMap(copy.deepcopy(state_map.mapa))
         x, y = new_map.keeper
+        mapa = new_map.mapa
 
         if action == 'd':
-            if new_map.mapa[y][x+1] in [4,5]:
+            if mapa[y][x+1] in [4,5]:
                 new_map.clear_tile((x+1, y))
-                a_direita_caixa = new_map.mapa[y][x+2]
+                a_direita_caixa = mapa[y][x+2]
                 if a_direita_caixa == 0:
                     new_map.set_tile((x+2, y), 4)
                 elif a_direita_caixa == 1:
@@ -366,9 +367,9 @@ class MyDomain:
 
 
         if action == 'a':
-            if new_map.mapa[y][x-1] in [4,5]:
+            if mapa[y][x-1] in [4,5]:
                 new_map.clear_tile((x-1, y))
-                a_esquerda_caixa = new_map.mapa[y][x-2]
+                a_esquerda_caixa = mapa[y][x-2]
                 if a_esquerda_caixa == 0:
                     new_map.set_tile((x-2, y), 4)
                 elif a_esquerda_caixa == 1:
@@ -378,9 +379,9 @@ class MyDomain:
             new_map.set_tile((x-1, y), 2)
         
         if action == 's':
-            if new_map.mapa[y + 1][x] in [4,5]:
+            if mapa[y + 1][x] in [4,5]:
                 new_map.clear_tile((x, y + 1))
-                em_baixo_caixa = new_map.mapa[y + 2][x]
+                em_baixo_caixa = mapa[y + 2][x]
                 if em_baixo_caixa == 0:
                     new_map.set_tile((x, y + 2), 4)
                 elif em_baixo_caixa == 1:
@@ -391,9 +392,9 @@ class MyDomain:
             new_map.set_tile((x, y+1), 2)
 
         if action == 'w':
-            if new_map.mapa[y-1][x] in [4,5]:
+            if mapa[y-1][x] in [4,5]:
                 new_map.clear_tile((x, y-1))
-                em_cima_caixa = new_map.mapa[y-2][x]
+                em_cima_caixa = mapa[y-2][x]
                 if em_cima_caixa == 0:
                     new_map.set_tile((x, y-2), 4)
                 elif em_cima_caixa == 1:
