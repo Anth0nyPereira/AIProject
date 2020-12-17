@@ -1,13 +1,8 @@
-from audioop import add
-from functools import reduce
 import copy
 import asyncio
-import math
 import bisect
-import time
+ 
 #-------------------------------------------------------MYMAP------------------------------------------------------------
-from game import logger
-
 
 class MyMap:
     """Representation of a Map."""
@@ -20,25 +15,6 @@ class MyMap:
             max([len(line) for line in self.mapa]),
             len(self.mapa),
         )  # X, Y
-
-    @property
-    def completed(self):
-        """Map is completed when there are no empty_goals!"""
-        return self.empty_goals == []
-
-    @property
-    def on_goal(self):
-        """Number of boxes on goal.
-
-           Counts per line and counts all lines using reduce
-        """
-        return reduce(
-            add,
-            [
-                reduce(lambda a, b: a + int(b == 5), l, 0)
-                for l in self.mapa
-            ],
-        )
 
     def filter_tiles(self, list_to_filter):
         """Util to retrieve list of coordinates of given tiles."""
@@ -89,16 +65,6 @@ class MyMap:
         x, y = pos
         self.mapa[y][x] = self.mapa[y][x] & 0b1  # lesser bit carries ON_GOAL
 
-    def is_blocked(self, pos):
-        """Determine if mobile entity can be placed at pos."""
-        x, y = pos
-        if x not in range(self.hor_tiles) or y not in range(self.ver_tiles):
-            logger.error("Position out of map")
-            return True
-        if self.mapa[y][x] == 8:
-            logger.debug("Position is a wall")
-            return True
-        return False
 #-----------------------------------------------------------------------------------------------------------------------
 
 #-------------------------------------------------------MYDOMAIN----------------------------------------------------------
