@@ -139,43 +139,35 @@ class MyDomain:
         direita_baixo = mapa[y+1][x+1]
         
         if a_direita in [4,5] and (em_baixo == 8 and direita_baixo == 8):
-            print("ha uma caixa a direita e wall em baixo" + " " + str(pos)) 
             state_map.set_tile(pos_init, state)
             return True
         else:
             a_esquerda = mapa[y][x-1]
             esquerda_baixo = mapa[y+1][x-1]
         if a_esquerda in [4,5] and (em_baixo == 8 and esquerda_baixo == 8):
-            print("ha uma caixa a esquerda e wall em baixo" + " " + str(pos)) 
             state_map.set_tile(pos_init, state)
             return True
         else:
             em_cima =  mapa[y-1][x]
             direita_cima = mapa[y-1][x+1]
         if a_direita in [4,5] and (em_cima == 8 and direita_cima == 8):
-            print("ha uma caixa a direita e wall em cima" + " " + str(pos)) 
             state_map.set_tile(pos_init, state)
             return True
         else:
             esquerda_cima = mapa[y-1][x-1]
         if a_esquerda in [4,5] and (em_cima == 8 and esquerda_cima == 8):
-            print("ha uma caixa a esquerda e wall em cima" + " " + str(pos)) 
             state_map.set_tile(pos_init, state)
             return True
         if em_baixo in [4,5] and (a_esquerda == 8 and esquerda_baixo == 8):
-            print("ha uma caixa em baixo e wall à esquerda" + " " + str(pos))
             state_map.set_tile(pos_init, state)
             return True
         if em_cima in [4,5] and (a_esquerda == 8 and esquerda_cima == 8):
-            print("ha uma caixa em cima e wall à esquerda" + " " + str(pos))
             state_map.set_tile(pos_init, state)
             return True
         if em_baixo in [4,5] and (a_direita == 8 and direita_baixo == 8):
-            print("ha uma caixa em baixo e wall à direita" + " " + str(pos))
             state_map.set_tile(pos_init, state)
             return True
         if em_cima in [4,5] and (a_direita == 8 and direita_cima == 8):
-            print("ha uma caixa em cima e wall à direita" + " " + str(pos))
             state_map.set_tile(pos_init, state)
             return True
         state_map.set_tile(pos_init, state)
@@ -212,9 +204,6 @@ class MyDomain:
                                     return False 
                                 if our_col == 8:
                                     state_map.set_tile(pos_init, state)
-                                    print("right-wall " + str(pos))
-                                    print(rightWall, leftWall)
-                                    print("blocked by " + str((col,y)))
                                     return True
                                 else:                           #when we find a hole, we know in which line the wall starts (firstwall)
                                     break
@@ -243,9 +232,6 @@ class MyDomain:
                                     return False
                                 if our_col == 8:
                                     state_map.set_tile(pos_init, state)
-                                    print("left-wall " + str(pos))
-                                    print(rightWall, leftWall)
-                                    print("blocked by " + str((col,y)))
                                     return True
                                 else:                           #when we find a hole, we know in which line the wall starts (firstwall)
                                     break
@@ -273,9 +259,6 @@ class MyDomain:
                                     return False 
                                 if our_col == 8:
                                     state_map.set_tile(pos_init, state)
-                                    print("down-wall " + str(pos))
-                                    print(rightWall, leftWall)
-                                    print("blocked by " + str((col,y)))
                                     return True
                             else:                           #when we find a hole, we know in which column the wall starts (firstwall)
                                 break
@@ -305,9 +288,6 @@ class MyDomain:
                                     return False 
                                 if our_col == 8:
                                     state_map.set_tile(pos_init, state)
-                                    print("up-wall " + str(pos))
-                                    print(rightWall, leftWall)
-                                    print("blocked by " + str((col,y)))
                                     return True
                             else:                           #when we find a hole, we know in which column the wall starts (firstwall)
                                 break
@@ -498,9 +478,6 @@ class MyTree:
         while self.open_nodes != []:
             await asyncio.sleep(0)
             node = self.open_nodes.pop(0)
-            print("--")
-            if node.parent != None:
-                print("p " + str(node.parent.state_map.keeper) + ", node " +  str(node.action) + " keeper " + str(node.state_map.keeper) + " depth " + str(node.depth))
             if self.problem.goal_test(node.state_map):
                 self.solution = node
                 return self.get_plan(node)
