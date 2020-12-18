@@ -43,11 +43,6 @@ class MyMap:
         """List of coordinates of the empty goals locations."""
         return self.filter_tiles([1,3])
 
-    def get_tile(self, pos):
-        """Retrieve tile at position pos."""
-        x, y = pos
-        return self.mapa[y][x]
-
     def set_tile(self, pos, tile):
         """Set the tile at position pos to tile."""
         x, y = pos
