@@ -1,0 +1,9 @@
+digraph "classes" {
+charset="utf-8"
+rankdir=BT
+"0" [label="{MyDomain|initial\l|BoxNextWallNotGoal(state_map, pos_init, pos)\lBoxesNextToWall(state_map, pos_init, pos)\lactions(state_map)\lcornerCheck(state_map, pos)\ldeadlocks(state_map, pos_init, pos)\lheuristic(state_map)\lresult(state_map, action)\lsatisfies(state_map)\l}", shape="record"];
+"1" [label="{MyMap|boxes\lempty_goals\lhor_tiles\lkeeper\lmapa\lver_tiles\l|clear_tile(pos)\lfilter_tiles(list_to_filter)\lset_tile(pos, tile)\l}", shape="record"];
+"2" [label="{MyNode|action\ldepth\lheuristic\lparent\lstate_map\l|}", shape="record"];
+"3" [label="{MyProblem|domain\linitial\l|goal_test(state)\l}", shape="record"];
+"4" [label="{MyTree|open_nodes : list\lproblem\lsolution : NoneType\lvisited_states : dict\l|get_plan(node)\lisRepeatedState(node)\lsearch(limit)\l}", shape="record"];
+}
